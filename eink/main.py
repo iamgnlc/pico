@@ -1,10 +1,13 @@
 from epd_2in13 import EPD_2in13_V4_Landscape
 from text_render import big_text, text_height, fit_scale
+from clipart import draw_clipart, clipart_size, CLIPART
 
+# -------------------------------------------------------
+# User config for the eink display.
 
-# ---- user config -----------------------------------------------------------
 # Lines of text to display (one entry per line).
-LINES       = ["GIANLUCA", "&", "GINTARE"]
+# ":name:" tokens draw the corresponding clipart from clipart.py.
+LINES       = ["GIANLUCA", ":heart: :heart: :heart:", "GINTARE"]
 
 # Character size multiplier. Each character is 8x8 at scale=1.
 TEXT_SCALE  = 4
@@ -12,10 +15,16 @@ TEXT_SCALE  = 4
 # Extra vertical pixels between lines.
 LINE_GAP    = 10
 
+# Horizontal pixels between adjacent clipart tokens on the same line.
+# Overrides the natural width of whitespace-only text sitting between two
+# clipart tokens (which would otherwise be 8*scale — a full char).
+CLIPART_GAP = 8
+
 # False = black text on white background.
 # True  = white text on black background.
 INVERT      = False
-# ---------------------------------------------------------------------------
+
+# -------------------------------------------------------
 
 # Visible drawing area for the landscape framebuffer.
 # The Waveshare driver pads the short axis from 122 -> 128 to align on 8-bit
@@ -50,14 +59,76 @@ if __name__=='__main__':
     # Manual scale.
     scale = TEXT_SCALE
 
-    heights = [text_height(s, scale) for s in LINES]
-    block_h = sum(heights) + LINE_GAP * (len(LINES) - 1)
+    def tokenize(s):
+        # Split s into a list of ("text", str) / ("clipart", name) tokens.
+        # ":name:" becomes a clipart token only if name is in CLIPART; any
+        # other colon is treated as literal text.
+        tokens = []
+        i, n = 0, len(s)
+        while i < n:
+            if s[i] == ":":
+                j = s.find(":", i + 1)
+                if j != -1 and s[i + 1:j] in CLIPART:
+                    tokens.append(("clipart", s[i + 1:j]))
+                    i = j + 1
+                    continue
+            start = i
+            i += 1
+            while i < n:
+                if s[i] == ":":
+                    j = s.find(":", i + 1)
+                    if j != -1 and s[i + 1:j] in CLIPART:
+                        break
+                i += 1
+            tokens.append(("text", s[start:i]))
+        return tokens
+
+    def is_clipart_gap(tokens, i):
+        # Whitespace-only text sandwiched between two clipart tokens.
+        kind, value = tokens[i]
+        if kind != "text" or value.strip():
+            return False
+        return (0 < i < len(tokens) - 1
+                and tokens[i - 1][0] == "clipart"
+                and tokens[i + 1][0] == "clipart")
+
+    def token_width(tokens, i):
+        kind, value = tokens[i]
+        if kind == "clipart":
+            return clipart_size(value, scale)[0]
+        if is_clipart_gap(tokens, i):
+            return CLIPART_GAP
+        return 8 * len(value) * scale
+
+    def token_height(kind, value):
+        if kind == "clipart":
+            return clipart_size(value, scale)[1]
+        # Whitespace-only text contributes no ink height.
+        return text_height(value, scale) if value.strip() else 0
+
+    def line_dims(s):
+        tokens = tokenize(s)
+        w = sum(token_width(tokens, i) for i in range(len(tokens)))
+        h = max((token_height(k, v) for k, v in tokens), default=0)
+        return w, h
+
+    def draw_line(fb, s, x, y, color):
+        tokens = tokenize(s)
+        cx = x
+        for i, (kind, value) in enumerate(tokens):
+            if kind == "clipart":
+                draw_clipart(fb, value, cx, y, color, scale)
+            elif not is_clipart_gap(tokens, i):
+                big_text(fb, value, cx, y, color, scale)
+            cx += token_width(tokens, i)
+
+    dims    = [line_dims(s) for s in LINES]
+    block_h = sum(h for _, h in dims) + LINE_GAP * (len(LINES) - 1)
     y       = Y_OFFSET + (CANVAS_H - block_h) // 2
 
-    for s, h in zip(LINES, heights):
-        text_w = 8 * len(s) * scale
-        x = (CANVAS_W - text_w) // 2
-        big_text(epd, s, x, y, fg, scale)
+    for s, (w, h) in zip(LINES, dims):
+        x = (CANVAS_W - w) // 2
+        draw_line(epd, s, x, y, fg)
         y += h + LINE_GAP
 
     epd.display(epd.buffer)
