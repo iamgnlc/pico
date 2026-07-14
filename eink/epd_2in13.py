@@ -539,6 +539,12 @@ class EPD_2in13_V4_Landscape(framebuf.FrameBuffer):
 
         self.TurnOnDisplay()
 
+    def set_border(self, color):
+        # SSD1680 Border Waveform Control (0x3C). Pass a background byte
+        # (0x00 = black, 0xFF = white) to match the panel border to it.
+        self.send_command(0x3C)
+        self.send_data(0x00 if color == 0x00 else 0x05)
+
     '''
     function : Sends the image buffer in RAM to e-Paper and displays
     parameter:
