@@ -19,9 +19,12 @@ class OLED(framebuf.FrameBuffer):
         self.rotate = rotate
         self.cs  = Pin(_CS,  Pin.OUT, value=1)
         self.rst = Pin(_RST, Pin.OUT, value=1)
-        self.dc  = Pin(_DC,  Pin.OUT, value=1)
+        # SPI first, DC after — GP8 is SPI1's default MISO on RP2040,
+        # so configuring DC before SPI lets SPI reclaim the pin and
+        # DC floats (silent blank panel).
         self.spi = SPI(1, 20_000_000, polarity=0, phase=0,
-                       sck=Pin(_SCK), mosi=Pin(_MOSI))
+                       sck=Pin(_SCK), mosi=Pin(_MOSI), miso=None)
+        self.dc  = Pin(_DC,  Pin.OUT, value=1)
 
         self.buffer = bytearray(WIDTH * HEIGHT // 8)
         super().__init__(self.buffer, WIDTH, HEIGHT, framebuf.MONO_HMSB)

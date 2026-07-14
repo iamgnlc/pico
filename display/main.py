@@ -1,25 +1,41 @@
 from sh1107 import OLED, WIDTH, HEIGHT
+import wifi
+import weather
+import icons
+import text_render
+import time
 
 # ---- user config -----------------------------------------------------------
-LINES    = ["Hello", "", "GNLC"]
-LINE_GAP = 4      # extra pixels between lines
-ROTATE   = True  # True = flip display 180°
+WIFI_SSID       = "REDACTED_SSID"
+WIFI_PASSWORD   = "REDACTED_PASSWORD"
+REFRESH_SECONDS = 600      # how often to refresh the weather
+ROTATE          = True     # True = flip display 180°
 # ---------------------------------------------------------------------------
 
-CHAR_W = 8
-CHAR_H = 8
+
+def _center_text(oled, s, x_center, y_center, scale=1):
+    w = 8 * len(s) * scale
+    h = 8 * scale
+    text_render.text(oled, s, x_center - w // 2, y_center - h // 2, scale)
+
+
+def _render(oled):
+    oled.fill(0)
+    ip = wifi.connect(WIFI_SSID, WIFI_PASSWORD)
+    if not ip:
+        _center_text(oled, "no wifi", WIDTH // 2, HEIGHT // 2)
+    else:
+        temp, code, is_day = weather.current()
+        if temp is None:
+            _center_text(oled, "no data", WIDTH // 2, HEIGHT // 2)
+        else:
+            icons.draw(oled, 16, 16, code, is_day)
+            _center_text(oled, "{:.0f}C".format(temp), 88, HEIGHT // 2, scale=2)
+    oled.show()
 
 
 if __name__ == "__main__":
     oled = OLED(rotate=ROTATE)
-    oled.fill(0)
-
-    block_h = CHAR_H * len(LINES) + LINE_GAP * (len(LINES) - 1)
-    y = (HEIGHT - block_h) // 2
-
-    for line in LINES:
-        x = (WIDTH - CHAR_W * len(line)) // 2
-        oled.text(line, x, y, 1)
-        y += CHAR_H + LINE_GAP
-
-    oled.show()
+    while True:
+        _render(oled)
+        time.sleep(REFRESH_SECONDS)
