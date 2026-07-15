@@ -6,8 +6,6 @@ import text_render
 import time
 
 # ---- user config -----------------------------------------------------------
-WIFI_SSID       = "REDACTED_SSID"
-WIFI_PASSWORD   = "REDACTED_PASSWORD"
 REFRESH_SECONDS = 600      # how often to refresh the weather
 ROTATE          = True     # True = flip display 180°
 # ---------------------------------------------------------------------------
@@ -19,9 +17,21 @@ def _center_text(oled, s, x_center, y_center, scale=1):
     text_render.text(oled, s, x_center - w // 2, y_center - h // 2, scale)
 
 
+try:
+    import secrets
+except ImportError:
+    oled = OLED(rotate=ROTATE)
+    oled.fill(0)
+    _center_text(oled, "missing", WIDTH // 2, HEIGHT // 3)
+    _center_text(oled, "secrets.py", WIDTH // 2, 2 * HEIGHT // 3)
+    oled.show()
+    while True:
+        time.sleep(3600)
+
+
 def _render(oled):
     oled.fill(0)
-    ip = wifi.connect(WIFI_SSID, WIFI_PASSWORD)
+    ip = wifi.connect(secrets.WIFI_SSID, secrets.WIFI_PASSWORD)
     if not ip:
         _center_text(oled, "no wifi", WIDTH // 2, HEIGHT // 2)
     else:
