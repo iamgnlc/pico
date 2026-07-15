@@ -13,7 +13,7 @@ Four vertical phases take the existing single-view weather demo to a fully navig
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Secure Foundation** - Rotate exposed credentials, move to secrets.py, fix degree symbol
+- [x] **Phase 1: Secure Foundation** - Rotate exposed credentials, move to secrets.py, fix degree symbol (completed 2026-07-15)
 - [ ] **Phase 2: Carousel + Weather** - Two-button carousel navigation and complete Weather view
 - [ ] **Phase 3: Clock View** - NTP-synced clock with timezone offset and per-second updates
 - [ ] **Phase 4: System View** - WiFi diagnostics view completing the v1 carousel
@@ -33,19 +33,19 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. The OLED displays the temperature as `19°` (with a drawn degree glyph) rather than `19C`
   4. The repo can be pushed to a public remote without leaking WiFi credentials
 
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 Plans:
 **Wave 1**
 
-- [ ] 01-01-PLAN.md — Extract WiFi creds to gitignored secrets.py + committed secrets.py.example + ImportError fallback in main.py (SEC-01, SEC-02)
+- [x] 01-01-PLAN.md — Extract WiFi creds to gitignored secrets.py + committed secrets.py.example + ImportError fallback in main.py (SEC-01, SEC-02)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 01-02-PLAN.md — Drop the `C` from the temperature format and draw a hollow degree ring inline in _render (WEATHER-01)
+- [x] 01-02-PLAN.md — Drop the `C` from the temperature format and draw a hollow degree ring inline in _render (WEATHER-01)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 01-03-PLAN.md — Rewrite git history with git-filter-repo to scrub old creds, then force-push all branches (SEC-03)
+- [x] 01-03-PLAN.md — Rewrite git history with git-filter-repo to scrub old creds, then force-push all branches (SEC-03)
 
 ### Phase 2: Carousel + Weather
 
@@ -101,7 +101,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Secure Foundation | 0/3 | Planned | - |
+| 1. Secure Foundation | 3/3 | Complete    | 2026-07-15 |
 | 2. Carousel + Weather | 0/TBD | Not started | - |
 | 3. Clock View | 0/TBD | Not started | - |
 | 4. System View | 0/TBD | Not started | - |

@@ -7,9 +7,9 @@
 
 ### Security
 
-- [ ] **SEC-01**: WiFi credentials live in a gitignored `secrets.py` — not in `main.py`
-- [ ] **SEC-02**: A committed `secrets.py.example` documents the expected keys without leaking values
-- [ ] **SEC-03**: The currently-exposed WiFi credentials (`main.py:9-10`) are rotated before shipping v1
+- [x] **SEC-01**: WiFi credentials live in a gitignored `secrets.py` — not in `main.py`
+- [x] **SEC-02**: A committed `secrets.py.example` documents the expected keys without leaking values
+- [x] **SEC-03**: The currently-exposed WiFi credentials (`main.py:9-10`) are rotated before shipping v1
 
 ### Navigation
 
@@ -22,7 +22,7 @@
 
 ### Weather View
 
-- [ ] **WEATHER-01**: The Weather view shows the current temperature with a degree symbol (e.g. `19°`) instead of `19C`
+- [x] **WEATHER-01**: The Weather view shows the current temperature with a degree symbol (e.g. `19°`) instead of `19C`
 - [ ] **WEATHER-02**: The Weather view shows the current condition icon for the fetched Open-Meteo weather code
 - [ ] **WEATHER-03**: The Weather view auto-refreshes every 600 seconds
 - [ ] **WEATHER-04**: The Weather view refreshes immediately when navigated to (in addition to the periodic cadence)
@@ -82,16 +82,16 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEC-01 | Phase 1 | Pending |
-| SEC-02 | Phase 1 | Pending |
-| SEC-03 | Phase 1 | Pending |
+| SEC-01 | Phase 1 | Complete |
+| SEC-02 | Phase 1 | Complete |
+| SEC-03 | Phase 1 | Complete |
 | NAV-01 | Phase 2 | Pending |
 | NAV-02 | Phase 2 | Pending |
 | NAV-03 | Phase 2 | Pending |
 | NAV-04 | Phase 2 | Pending |
 | NAV-05 | Phase 2 | Pending |
 | NAV-06 | Phase 2 | Pending |
-| WEATHER-01 | Phase 1 | Pending |
+| WEATHER-01 | Phase 1 | Complete |
 | WEATHER-02 | Phase 2 | Pending |
 | WEATHER-03 | Phase 2 | Pending |
 | WEATHER-04 | Phase 2 | Pending |
@@ -107,6 +107,7 @@
 | SYSTEM-04 | Phase 4 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 23 total
 - Mapped to phases: 23
 - Unmapped: 0 ✓
