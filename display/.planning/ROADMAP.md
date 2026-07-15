@@ -7,6 +7,7 @@ Four vertical phases take the existing single-view weather demo to a fully navig
 ## Phases
 
 **Phase Numbering:**
+
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
@@ -20,52 +21,76 @@ Decimal phases appear between their surrounding integers in numeric order.
 ## Phase Details
 
 ### Phase 1: Secure Foundation
+
 **Goal**: The codebase is safe to push and the temperature renders with a degree symbol
 **Mode:** mvp
 **Depends on**: Nothing (first phase)
 **Requirements**: SEC-01, SEC-02, SEC-03, WEATHER-01
 **Success Criteria** (what must be TRUE):
+
   1. Running `git status` shows `secrets.py` as untracked (gitignored) and `main.py` no longer contains credential strings
   2. A `secrets.py.example` file is committed showing the expected keys with placeholder values
   3. The OLED displays the temperature as `19°` (with a drawn degree glyph) rather than `19C`
   4. The repo can be pushed to a public remote without leaking WiFi credentials
-**Plans**: TBD
+
+**Plans:** 3 plans
+Plans:
+**Wave 1**
+
+- [ ] 01-01-PLAN.md — Extract WiFi creds to gitignored secrets.py + committed secrets.py.example + ImportError fallback in main.py (SEC-01, SEC-02)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 01-02-PLAN.md — Drop the `C` from the temperature format and draw a hollow degree ring inline in _render (WEATHER-01)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 01-03-PLAN.md — Rewrite git history with git-filter-repo to scrub old creds, then force-push all branches (SEC-03)
 
 ### Phase 2: Carousel + Weather
+
 **Goal**: Pressing KEY0/KEY1 cycles through all three views; the Weather view is fully functional
 **Mode:** mvp
 **Depends on**: Phase 1
 **Requirements**: NAV-01, NAV-02, NAV-03, NAV-04, NAV-05, NAV-06, WEATHER-02, WEATHER-03, WEATHER-04, WEATHER-05
 **Success Criteria** (what must be TRUE):
+
   1. Pressing KEY1 advances to the next view and the screen redraws within one frame; pressing KEY0 goes back
   2. Pressing KEY0 while on Weather (first view) wraps to System (last view), and vice versa for KEY1 on System
   3. On every boot the device starts on the Weather view; Clock and System stubs are reachable via navigation
   4. Page dots at the bottom of the OLED show which of three positions is active, updating on each button press
   5. The Weather view shows the condition icon, refreshes every 600 s and immediately on view-switch, and displays "no wifi" / "no data" without crashing when the fetch fails
+
 **Plans**: TBD
 **UI hint**: yes
 
 ### Phase 3: Clock View
+
 **Goal**: The Clock view shows live NTP-synced time and handles the WiFi-absent case gracefully
 **Mode:** mvp
 **Depends on**: Phase 2
 **Requirements**: CLOCK-01, CLOCK-02, CLOCK-03, CLOCK-04, CLOCK-05
 **Success Criteria** (what must be TRUE):
+
   1. Navigating to the Clock view shows the current time adjusted by the hardcoded timezone offset, updating every second while the view is active
   2. After boot the device performs an NTP sync and re-syncs on a background cadence without blocking navigation
   3. When NTP has never succeeded (e.g. no WiFi at boot), the Clock view shows `--:--` instead of a wrong or blank time
+
 **Plans**: TBD
 **UI hint**: yes
 
 ### Phase 4: System View
+
 **Goal**: The System view displays live WiFi diagnostics and remains usable when the device is offline
 **Mode:** mvp
 **Depends on**: Phase 3
 **Requirements**: SYSTEM-01, SYSTEM-02, SYSTEM-03, SYSTEM-04
 **Success Criteria** (what must be TRUE):
+
   1. Navigating to the System view shows the connected SSID, the device IP address, and WiFi signal strength (dBm or bar representation)
   2. When WiFi is disconnected, the System view shows a clear "disconnected" state for each field rather than blank or stale values
   3. The System view refreshes its data each time it is navigated to
+
 **Plans**: TBD
 **UI hint**: yes
 
@@ -76,7 +101,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Secure Foundation | 0/TBD | Not started | - |
+| 1. Secure Foundation | 0/3 | Planned | - |
 | 2. Carousel + Weather | 0/TBD | Not started | - |
 | 3. Clock View | 0/TBD | Not started | - |
 | 4. System View | 0/TBD | Not started | - |
