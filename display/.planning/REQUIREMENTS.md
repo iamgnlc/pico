@@ -82,35 +82,35 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEC-01 | — | Pending |
-| SEC-02 | — | Pending |
-| SEC-03 | — | Pending |
-| NAV-01 | — | Pending |
-| NAV-02 | — | Pending |
-| NAV-03 | — | Pending |
-| NAV-04 | — | Pending |
-| NAV-05 | — | Pending |
-| NAV-06 | — | Pending |
-| WEATHER-01 | — | Pending |
-| WEATHER-02 | — | Pending |
-| WEATHER-03 | — | Pending |
-| WEATHER-04 | — | Pending |
-| WEATHER-05 | — | Pending |
-| CLOCK-01 | — | Pending |
-| CLOCK-02 | — | Pending |
-| CLOCK-03 | — | Pending |
-| CLOCK-04 | — | Pending |
-| CLOCK-05 | — | Pending |
-| SYSTEM-01 | — | Pending |
-| SYSTEM-02 | — | Pending |
-| SYSTEM-03 | — | Pending |
-| SYSTEM-04 | — | Pending |
+| SEC-01 | Phase 1 | Pending |
+| SEC-02 | Phase 1 | Pending |
+| SEC-03 | Phase 1 | Pending |
+| NAV-01 | Phase 2 | Pending |
+| NAV-02 | Phase 2 | Pending |
+| NAV-03 | Phase 2 | Pending |
+| NAV-04 | Phase 2 | Pending |
+| NAV-05 | Phase 2 | Pending |
+| NAV-06 | Phase 2 | Pending |
+| WEATHER-01 | Phase 1 | Pending |
+| WEATHER-02 | Phase 2 | Pending |
+| WEATHER-03 | Phase 2 | Pending |
+| WEATHER-04 | Phase 2 | Pending |
+| WEATHER-05 | Phase 2 | Pending |
+| CLOCK-01 | Phase 3 | Pending |
+| CLOCK-02 | Phase 3 | Pending |
+| CLOCK-03 | Phase 3 | Pending |
+| CLOCK-04 | Phase 3 | Pending |
+| CLOCK-05 | Phase 3 | Pending |
+| SYSTEM-01 | Phase 4 | Pending |
+| SYSTEM-02 | Phase 4 | Pending |
+| SYSTEM-03 | Phase 4 | Pending |
+| SYSTEM-04 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 23 total
-- Mapped to phases: 0
-- Unmapped: 23 ⚠️ (populated during roadmap creation)
+- Mapped to phases: 23
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-07-15*
-*Last updated: 2026-07-15 after initial definition*
+*Last updated: 2026-07-15 after roadmap creation — all 23 requirements mapped*
