@@ -40,7 +40,12 @@ def _render(oled):
             _center_text(oled, "no data", WIDTH // 2, HEIGHT // 2)
         else:
             icons.draw(oled, 16, 16, code, is_day)
-            _center_text(oled, "{:.0f}C".format(temp), 88, HEIGHT // 2, scale=2)
+            t = "{:.0f}".format(temp)
+            _center_text(oled, t, 88, HEIGHT // 2, scale=2)
+            w = 8 * len(t) * 2
+            cx = 88 + w // 2 + 5
+            cy = HEIGHT // 2 - 8 + 2
+            oled.ellipse(cx, cy, 2, 2, 1, False)
     oled.show()
 
 
