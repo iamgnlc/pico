@@ -3,7 +3,6 @@ import wifi
 import weather
 import icons
 import text_render
-import secrets
 
 
 _cached_temp = None
@@ -38,6 +37,11 @@ def render(oled):
 
 def refresh(oled):
     global _cached_temp, _cached_code, _cached_is_day, _cache_status
+    # Lazy import: secrets.py absence is caught by main.py's fallback block,
+    # which halts before refresh() is ever called. Importing at module load
+    # would fire ImportError during `import weather_view` in main.py — before
+    # the fallback screen renders — and drop to REPL instead.
+    import secrets
     ip = wifi.connect(secrets.WIFI_SSID, secrets.WIFI_PASSWORD)
     if not ip:
         _cache_status = "no_wifi"
