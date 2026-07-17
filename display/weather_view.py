@@ -9,6 +9,7 @@ import time
 _cached_temp = None
 _cached_code = None
 _cached_is_day = None
+_cached_location = None
 _cache_status = "pending"
 
 _REFRESH_MS = 600_000   # WEATHER-03 cadence (matches REFRESH_SECONDS = 600)
@@ -50,16 +51,20 @@ def render(oled):
         _center_text(oled, "no data", WIDTH // 2, 32)
     else:
         icons.draw(oled, 16, 16, _cached_code, _cached_is_day)
+        if _cached_location is not None:
+            max_chars = min(15, WIDTH // 8)
+            label = _cached_location[:max_chars]
+            _center_text(oled, label, 88, 18)
         t = "{:.0f}".format(_cached_temp)
-        _center_text(oled, t, 88, 32, scale=2)
+        _center_text(oled, t, 88, 36, scale=2)
         w = 8 * len(t) * 2
         cx = 88 + w // 2 + 5
-        cy = 32 - 8 + 2
+        cy = 36 - 8 + 2
         oled.ellipse(cx, cy, 2, 2, 1, False)
 
 
 def refresh(oled):
-    global _cached_temp, _cached_code, _cached_is_day, _cache_status, _last_refresh_ms
+    global _cached_temp, _cached_code, _cached_is_day, _cached_location, _cache_status, _last_refresh_ms
     # Stamp at start so transient failures don't tight-loop the scheduler —
     # a failed fetch still consumes one _REFRESH_MS window before the next try.
     _last_refresh_ms = time.ticks_ms()
@@ -88,7 +93,7 @@ def refresh(oled):
         _draw_spinner(oled)
         oled.show()
 
-    temp, code, is_day = weather.current()
+    temp, code, is_day, location = weather.current()
     if temp is None:
         _cache_status = "no_data"
         render(oled)
@@ -97,5 +102,6 @@ def refresh(oled):
     _cached_temp = temp
     _cached_code = code
     _cached_is_day = is_day
+    _cached_location = location
     _cache_status = "ok"
     render(oled)
