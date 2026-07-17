@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 1 context gathered
-last_updated: "2026-07-15T23:22:50.445Z"
-last_activity: 2026-07-15
+stopped_at: Phase 2 context gathered
+last_updated: "2026-07-17T21:15:00.000Z"
+last_activity: 2026-07-17
 progress:
   total_phases: 4
   completed_phases: 1
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-15)
 
 **Core value:** Pressing a button changes the view instantly and reliably; each view stays accurate on its own refresh cadence without user intervention.
-**Current focus:** Phase 1 — Secure Foundation
+**Current focus:** Phase 2 — Carousel + Weather
 
 ## Current Position
 
 Phase: 2 of 4 (carousel + weather)
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-07-15
+Plan: Not started — CONTEXT.md ready
+Status: Ready to plan
+Last activity: 2026-07-17
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -64,6 +64,12 @@ Recent decisions affecting current work:
 - Phase 1: Render `°` via custom drawn glyph — default 8×8 framebuf font has no degree character
 - Phase 2: Carousel only — no menu/list navigation; KEY0 = prev, KEY1 = next; wraps at ends
 - Phase 2: Always boot to Weather view; no persistence across reboots
+- Phase 2 (D-13/14/15): KEY0/KEY1 via `Pin.irq(FALLING)` + ticks_ms software debounce; main loop is a ticks_ms poll scheduler (no asyncio, no machine.Timer)
+- Phase 2 (D-16/17/18): Three flat view files (`weather_view.py`, `clock_view.py`, `system_view.py`) with `render(oled)` stateless interface; carousel state in `main.py`
+- Phase 2 (D-19/20/21): Page dots at y=60, r=2, 12px spacing, filled active + hollow inactive; view content restricted to rows 0-53
+- Phase 2 (D-22): On-view-switch = redraw cached data instantly; 600s cadence in the scheduler
+- Phase 2 (D-23): Boot sequence = "connecting..." static during wifi.connect(), then spinner during weather fetch
+- Phase 2 (D-24): Clock and System stubs render fully blank in Phase 2 — page dots only
 
 ### Pending Todos
 
@@ -82,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-15T22:47:43.689Z
-Stopped at: Phase 1 context gathered
-Resume file: .planning/phases/01-secure-foundation/01-CONTEXT.md
+Last session: 2026-07-17T21:15:00Z
+Stopped at: Phase 2 context gathered
+Resume file: .planning/phases/02-carousel-+-weather/02-CONTEXT.md
