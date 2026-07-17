@@ -73,7 +73,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 02-03-PLAN.md — 600s Weather scheduler cadence + boot "connecting..." / spinner sequence + WEATHER-05 error-state confirmation. WEATHER-03, WEATHER-04, WEATHER-05.
+- [x] 02-03-PLAN.md — 600s Weather scheduler cadence + boot "connecting..." / spinner sequence + WEATHER-05 error-state confirmation. WEATHER-03, WEATHER-04, WEATHER-05.
 
 **UI hint**: yes
 
@@ -115,6 +115,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Secure Foundation | 3/3 | Complete    | 2026-07-15 |
-| 2. Carousel + Weather | 2/3 | In Progress | - |
+| 2. Carousel + Weather | 3/3 | Executed — awaiting on-device verify | - |
 | 3. Clock View | 0/TBD | Not started | - |
 | 4. System View | 0/TBD | Not started | - |
