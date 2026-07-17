@@ -77,10 +77,16 @@ def refresh(oled):
         return
 
     # Draw a spinner frame BEFORE the blocking urequests.get() so the user sees
-    # fetch progress. Satisfies D-23 "at least one frame during the fetch phase".
-    render(oled)
-    _draw_spinner(oled)
-    oled.show()
+    # fetch progress — but ONLY when we already have weather data to update
+    # (cache is "ok"). During the initial boot fetch, cache_status is "pending"
+    # and the panel is showing "connecting..." — overlaying a spinner there is
+    # visual noise the operator explicitly opted out of. D-23's "at least one
+    # frame during the fetch phase" is preserved for the 600s background refresh
+    # path, which is where spinner-as-activity-indicator carries useful signal.
+    if _cache_status == "ok":
+        render(oled)
+        _draw_spinner(oled)
+        oled.show()
 
     temp, code, is_day = weather.current()
     if temp is None:
