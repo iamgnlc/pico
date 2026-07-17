@@ -91,7 +91,16 @@ Plans:
   3. As soon as one fetch succeeds after a failure run, the next refresh reverts to the 600-second default cadence (does NOT stay stuck at 60 s)
   4. The 60-second retry window does not miss button presses (poll loop remains responsive; presses queue via IRQ and dispatch after refresh returns)
 
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+**Wave 1**
+
+- [ ] 02.1-01-PLAN.md — Extend weather.current() to 4-tuple (temp, code, is_day, location); wire _cached_location + relayout render() with location label at (88, 18), temp at (88, 36), ring cy=30. WEATHER-08.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 02.1-02-PLAN.md — Add _RETRY_MS = 60_000 and cadence-aware should_refresh predicate (600s when _cache_status == "ok", else 60s). WEATHER-09.
+
 **UI hint**: yes
 
 ### Phase 3: Clock View
@@ -133,6 +142,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Secure Foundation | 3/3 | Complete    | 2026-07-15 |
 | 2. Carousel + Weather | 3/3 | Complete    | 2026-07-17 |
-| 2.1. Location Label + Fetch Retry (INSERTED) | 0/TBD | Not started | - |
+| 2.1. Location Label + Fetch Retry (INSERTED) | 0/2 | Not started | - |
 | 3. Clock View | 0/TBD | Not started | - |
 | 4. System View | 0/TBD | Not started | - |
