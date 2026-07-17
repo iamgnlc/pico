@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-15)
 
 **Core value:** Pressing a button changes the view instantly and reliably; each view stays accurate on its own refresh cadence without user intervention.
-**Current focus:** Phase 2 Complete — next up Phase 3 (Clock View) or Phase 2.1 (WEATHER-06/07 backlog)
+**Current focus:** Phase 2 Complete — Phase 2.1 (INSERTED, WEATHER-08/09) is next; Phase 3 after
 
 ## Current Position
 
-Phase: 2 of 4 COMPLETE (carousel + weather); Phase 3 next
+Phase: 2 of 4 COMPLETE (carousel + weather); Phase 2.1 (INSERTED) queued next
 Plan: 3/3 executed, verifier PASSED (code + on-device), 2 post-verification visual fixes landed
-Status: Complete
+Status: Complete — Phase 2.1 pending discuss/plan/execute
 Last activity: 2026-07-17
 
 Progress: [░░░░░░░░░░] 0%

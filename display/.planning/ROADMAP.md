@@ -15,6 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Secure Foundation** - Rotate exposed credentials, move to secrets.py, fix degree symbol (completed 2026-07-15)
 - [x] **Phase 2: Carousel + Weather** - Two-button carousel navigation and complete Weather view (completed 2026-07-17)
+- [ ] **Phase 2.1: Location Label + Fetch Retry** (INSERTED) - Show location name on Weather view; retry every 60s on fetch failure
 - [ ] **Phase 3: Clock View** - NTP-synced clock with timezone offset and per-second updates
 - [ ] **Phase 4: System View** - WiFi diagnostics view completing the v1 carousel
 
@@ -77,6 +78,22 @@ Plans:
 
 **UI hint**: yes
 
+### Phase 2.1: Location Label + Fetch Retry (INSERTED)
+
+**Goal**: The Weather view shows the current location name alongside the icon and temperature, and the device recovers from fetch failures on a 60-second cadence until the first success
+**Mode:** mvp
+**Depends on**: Phase 2
+**Requirements**: WEATHER-08, WEATHER-09
+**Success Criteria** (what must be TRUE):
+
+  1. The Weather view shows a location name (city or region from ip-api geolocation) visible in the content area alongside the condition icon and temperature
+  2. When a boot-time or scheduled weather fetch fails ("no wifi" or "no data"), the next refresh attempt fires ~60 s later — not the default 600 s
+  3. As soon as one fetch succeeds after a failure run, the next refresh reverts to the 600-second default cadence (does NOT stay stuck at 60 s)
+  4. The 60-second retry window does not miss button presses (poll loop remains responsive; presses queue via IRQ and dispatch after refresh returns)
+
+**Plans**: TBD
+**UI hint**: yes
+
 ### Phase 3: Clock View
 
 **Goal**: The Clock view shows live NTP-synced time and handles the WiFi-absent case gracefully
@@ -116,5 +133,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Secure Foundation | 3/3 | Complete    | 2026-07-15 |
 | 2. Carousel + Weather | 3/3 | Complete    | 2026-07-17 |
+| 2.1. Location Label + Fetch Retry (INSERTED) | 0/TBD | Not started | - |
 | 3. Clock View | 0/TBD | Not started | - |
 | 4. System View | 0/TBD | Not started | - |

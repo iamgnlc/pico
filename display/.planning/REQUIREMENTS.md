@@ -27,6 +27,8 @@
 - [ ] **WEATHER-03**: The Weather view auto-refreshes every 600 seconds
 - [ ] **WEATHER-04**: The Weather view refreshes immediately when navigated to (in addition to the periodic cadence)
 - [ ] **WEATHER-05**: The Weather view shows a clear error state ("no wifi" / "no data") when the fetch fails, without crashing or blocking the carousel
+- [ ] **WEATHER-08**: The Weather view displays the current location name (city/region from ip-api geolocation) alongside the icon and temperature
+- [ ] **WEATHER-09**: When a weather fetch fails, the device retries every 60 seconds until the first successful fetch, then reverts to the 600-second default cadence
 
 ### Clock View
 
@@ -85,17 +87,19 @@
 | SEC-01 | Phase 1 | Complete |
 | SEC-02 | Phase 1 | Complete |
 | SEC-03 | Phase 1 | Complete |
-| NAV-01 | Phase 2 | Pending |
-| NAV-02 | Phase 2 | Pending |
-| NAV-03 | Phase 2 | Pending |
-| NAV-04 | Phase 2 | Pending |
-| NAV-05 | Phase 2 | Pending |
-| NAV-06 | Phase 2 | Pending |
+| NAV-01 | Phase 2 | Complete |
+| NAV-02 | Phase 2 | Complete |
+| NAV-03 | Phase 2 | Complete |
+| NAV-04 | Phase 2 | Complete |
+| NAV-05 | Phase 2 | Complete |
+| NAV-06 | Phase 2 | Complete |
 | WEATHER-01 | Phase 1 | Complete |
-| WEATHER-02 | Phase 2 | Pending |
-| WEATHER-03 | Phase 2 | Pending |
-| WEATHER-04 | Phase 2 | Pending |
-| WEATHER-05 | Phase 2 | Pending |
+| WEATHER-02 | Phase 2 | Complete |
+| WEATHER-03 | Phase 2 | Complete |
+| WEATHER-04 | Phase 2 | Complete |
+| WEATHER-05 | Phase 2 | Complete |
+| WEATHER-08 | Phase 2.1 | Pending |
+| WEATHER-09 | Phase 2.1 | Pending |
 | CLOCK-01 | Phase 3 | Pending |
 | CLOCK-02 | Phase 3 | Pending |
 | CLOCK-03 | Phase 3 | Pending |
@@ -108,10 +112,10 @@
 
 **Coverage:**
 
-- v1 requirements: 23 total
-- Mapped to phases: 23
+- v1 requirements: 25 total
+- Mapped to phases: 25
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-07-15*
-*Last updated: 2026-07-15 after roadmap creation — all 23 requirements mapped*
+*Last updated: 2026-07-17 — Phase 2 closed; added WEATHER-08 (location label) and WEATHER-09 (60s fast-retry on failure) mapped to inserted Phase 2.1*
