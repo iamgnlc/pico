@@ -1,0 +1,62 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-07-17T23:00:00Z",
+  "phase": "02.1",
+  "phase_name": "location-label-+-fetch-retry",
+  "phase_dir": ".planning/phases/02.1-location-label-+-fetch-retry",
+  "status": "wave_boundary",
+  "position": "Phase 2.1 Wave 1 (Plan 02.1-01) complete; Wave 2 (Plan 02.1-02) not yet started",
+  "completed_this_session": [
+    {"item": "Phase 2 completion + closeout (all 10 requirements human-verified on-device)", "commit": "7f23222 docs(02): mark Phase 2 (Carousel + Weather) complete"},
+    {"item": "Phase 2 post-verify fixes", "commits": ["376615d fix(02): restore temp y-anchor to vertical center (y=32)", "db94c78 fix(02): suppress spinner during 'connecting...' (pending cache)"]},
+    {"item": "Phase 2.1 roadmap insertion + REQUIREMENTS.md update (WEATHER-08 + WEATHER-09)", "commit": "9f91a1d docs(roadmap): insert Phase 2.1 — Location Label + Fetch Retry"},
+    {"item": "Phase 2.1 discuss-phase — 8 decisions D-26..D-33 across 4 gray areas", "commit": "0b0bba3 docs(02.1): capture phase context"},
+    {"item": "Phase 2.1 plan-phase — 2 plans in 2 waves, plan-check PASSED", "commit": "888aecc docs(02.1): phase plans — 2 plans, 2 waves, plan-check PASSED"},
+    {"item": "Phase 2.1 execute-phase Wave 1 (Plan 02.1-01)", "commits": ["f93a8a4 feat(02.1-01): weather.current() returns 4-tuple with location", "564c0aa feat(02.1-01): cache location + relayout render() with label + moved temp", "9960ac6 docs(02.1-01): plan summary — location label wired end-to-end"]}
+  ],
+  "requirements_delivered": ["WEATHER-08 (code shipped; end-of-phase visual verify deferred)"],
+  "requirements_pending": ["WEATHER-09 (Plan 02.1-02, Wave 2)"],
+  "blockers": [],
+  "human_actions_pending": [
+    {
+      "action": "Update display/secrets.py on the host AND on the Pico with the current WiFi password if it hasn't been done already",
+      "context": "Same standing item from the original session-start HANDOFF. Phase 2's human-verify apparently passed, so the operator may have done this already. If Phase 2.1's human-verify is scheduled next session, confirm secrets.py is current before the happy-path checks.",
+      "blocking": false
+    },
+    {
+      "action": "End-of-phase on-device human-verify batch for Phase 2.1",
+      "context": "Two checkpoints deferred per config human_verify_mode=end-of-phase. (1) Plan 02.1-01 Task 3: visual verify of the location label above the temp, temp at y=36, ring cy=30, page dots undisturbed at y=60, truncation behavior on long city names. (2) Plan 02.1-02 will add a similar Task 2 checkpoint for the 60s retry cadence — cold-boot fetch failure should retry ~60s later; first success should revert to 600s; button responsiveness during retry window. Both batch together after Plan 02.1-02 is executed.",
+      "blocking": true
+    }
+  ],
+  "session_lessons": [
+    {
+      "lesson": "WEATHER-06 and WEATHER-07 IDs already assigned to v2 backlog items — corrected mid-session by renumbering the new v1 additions to WEATHER-08 and WEATHER-09. Reference the corrected IDs in all future Phase 2.1 discussion.",
+      "severity": "advisory",
+      "evidence": "During Phase 2.1 requirement capture, the initial proposal used WEATHER-06/07. On the grep pass through .planning/REQUIREMENTS.md, both IDs were found already assigned to v2 items (multi-day forecast and user-configurable location override). Renumbered to WEATHER-08/09 with a note in the commit message for the audit trail. STATE.md had one stale reference to '06/07' from an earlier turn that was cleaned up as part of the ROADMAP update."
+    }
+  ],
+  "notable_deviations": [
+    {
+      "topic": "Temp y-anchor moved twice during Phase 2 + Phase 2.1 lifecycle",
+      "captured_in_discuss": "Phase 2 D-19 permitted planner-discretion tuning of the temp y-anchor",
+      "actual": "Phase 2 shipped y=32 (post-verify fix restored the Phase 1 baseline). Phase 2.1 D-26 shifted it to y=36 to make room for the location label above. Ring cy moved 26 → 30 to track.",
+      "impact": "Two commits in the ring cy line (376615d, 564c0aa). Layout intent is documented in D-26 rationale; the coord-change chain is git-blameable if a future phase adjusts it again."
+    }
+  ],
+  "next_action": "Continue with Plan 02.1-02 (Wave 2) — adds _RETRY_MS = 60_000 module constant to weather_view.py and updates should_refresh(now_ms) to inline-check _cache_status (600s if 'ok' else 60s). Only weather_view.py touched. Two tasks (1 auto + 1 human-verify). See .planning/phases/02.1-location-label-+-fetch-retry/02.1-02-PLAN.md for the full spec.",
+  "context_notes": "Session cadence: per-wave gate between plans (matches Phase 2 pattern). Human-verify deferred to end-of-phase batch per workflow.human_verify_mode=end-of-phase config setting. Plan-checker flagged 3 non-blocking items during Phase 2.1 plan-phase; those FLAG notes are captured in the 888aecc commit message for reference during the visual verify. The temp y-anchor change (32 → 36) is planner-discretion-permitted per D-26 but should be visually re-verified on-device.",
+  "recent_commits_on_main": [
+    "9960ac6 docs(02.1-01): plan summary — location label wired end-to-end",
+    "564c0aa feat(02.1-01): cache location + relayout render() with label + moved temp",
+    "f93a8a4 feat(02.1-01): weather.current() returns 4-tuple with location",
+    "888aecc docs(02.1): phase plans — 2 plans, 2 waves, plan-check PASSED",
+    "0b0bba3 docs(02.1): capture phase context",
+    "9f91a1d docs(roadmap): insert Phase 2.1 — Location Label + Fetch Retry",
+    "7f23222 docs(02): mark Phase 2 (Carousel + Weather) complete",
+    "db94c78 fix(02): suppress spinner during 'connecting...' (pending cache)",
+    "376615d fix(02): restore temp y-anchor to vertical center (y=32)",
+    "92d72bc docs(02): verifier report — code paths verified, human-verify deferred"
+  ],
+  "uncommitted_files": []
+}
