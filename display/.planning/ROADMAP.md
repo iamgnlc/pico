@@ -14,7 +14,7 @@ Four vertical phases take the existing single-view weather demo to a fully navig
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Secure Foundation** - Rotate exposed credentials, move to secrets.py, fix degree symbol (completed 2026-07-15)
-- [ ] **Phase 2: Carousel + Weather** - Two-button carousel navigation and complete Weather view
+- [x] **Phase 2: Carousel + Weather** - Two-button carousel navigation and complete Weather view (completed 2026-07-17)
 - [ ] **Phase 3: Clock View** - NTP-synced clock with timezone offset and per-second updates
 - [ ] **Phase 4: System View** - WiFi diagnostics view completing the v1 carousel
 
@@ -115,6 +115,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Secure Foundation | 3/3 | Complete    | 2026-07-15 |
-| 2. Carousel + Weather | 3/3 | Code-verified — awaiting on-device human-verify | - |
+| 2. Carousel + Weather | 3/3 | Complete    | 2026-07-17 |
 | 3. Clock View | 0/TBD | Not started | - |
 | 4. System View | 0/TBD | Not started | - |

@@ -1,8 +1,12 @@
 ---
 phase: 02-carousel-+-weather
 verified: 2026-07-17
-status: human_needed
-score: 10/10 must-haves verified in code (5/5 SC code paths + 10/10 requirement code paths)
+status: passed
+human_verified: 2026-07-17
+score: 10/10 must-haves verified in code and on-device (5/5 SC + 10/10 requirements + 13/13 decisions)
+post_verification_fixes:
+  - "376615d fix(02): restore temp y-anchor to vertical center (y=32)"
+  - "db94c78 fix(02): suppress spinner during 'connecting...' (pending cache)"
 mode: mvp
 overrides_applied: 0
 gaps: []

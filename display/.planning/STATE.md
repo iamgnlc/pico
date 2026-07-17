@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 2 code-verified — awaiting on-device human-verify batch
-last_updated: "2026-07-17T22:45:00.000Z"
+stopped_at: Phase 2 COMPLETE — on-device human-verify passed
+last_updated: "2026-07-17T23:00:00.000Z"
 last_activity: 2026-07-17
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 6
   completed_plans: 6
   percent: 50
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-15)
 
 **Core value:** Pressing a button changes the view instantly and reliably; each view stays accurate on its own refresh cadence without user intervention.
-**Current focus:** Phase 2 — Carousel + Weather
+**Current focus:** Phase 2 Complete — next up Phase 3 (Clock View) or Phase 2.1 (WEATHER-06/07 backlog)
 
 ## Current Position
 
-Phase: 2 of 4 (carousel + weather)
-Plan: 3/3 executed + verifier PARTIAL (code paths verified, hardware deferred)
-Status: Code-verified — awaiting on-device human-verify batch to close phase
+Phase: 2 of 4 COMPLETE (carousel + weather); Phase 3 next
+Plan: 3/3 executed, verifier PASSED (code + on-device), 2 post-verification visual fixes landed
+Status: Complete
 Last activity: 2026-07-17
 
 Progress: [░░░░░░░░░░] 0%
