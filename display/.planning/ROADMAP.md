@@ -61,7 +61,20 @@ Plans:
   4. Page dots at the bottom of the OLED show which of three positions is active, updating on each button press
   5. The Weather view shows the condition icon, refreshes every 600 s and immediately on view-switch, and displays "no wifi" / "no data" without crashing when the fetch fails
 
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+**Wave 1**
+
+- [ ] 02-01-PLAN.md — Extract Weather rendering into weather_view.py (behavior-preserving refactor). WEATHER-02.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 02-02-PLAN.md — Stub view modules + carousel dispatch + IRQ handlers + software debounce + poll scheduler + page-dot indicator. NAV-01..06.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 02-03-PLAN.md — 600s Weather scheduler cadence + boot "connecting..." / spinner sequence + WEATHER-05 error-state confirmation. WEATHER-03, WEATHER-04, WEATHER-05.
+
 **UI hint**: yes
 
 ### Phase 3: Clock View
@@ -102,6 +115,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Secure Foundation | 3/3 | Complete    | 2026-07-15 |
-| 2. Carousel + Weather | 0/TBD | Not started | - |
+| 2. Carousel + Weather | 0/3 | Planned | - |
 | 3. Clock View | 0/TBD | Not started | - |
 | 4. System View | 0/TBD | Not started | - |
