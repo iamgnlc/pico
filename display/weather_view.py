@@ -43,18 +43,18 @@ def should_refresh(now_ms):
 def render(oled):
     oled.fill(0)
     if _cache_status == "pending":
-        _center_text(oled, "connecting...", WIDTH // 2, 26)
+        _center_text(oled, "connecting...", WIDTH // 2, 32)
     elif _cache_status == "no_wifi":
-        _center_text(oled, "no wifi", WIDTH // 2, 26)
+        _center_text(oled, "no wifi", WIDTH // 2, 32)
     elif _cache_status == "no_data":
-        _center_text(oled, "no data", WIDTH // 2, 26)
+        _center_text(oled, "no data", WIDTH // 2, 32)
     else:
         icons.draw(oled, 16, 16, _cached_code, _cached_is_day)
         t = "{:.0f}".format(_cached_temp)
-        _center_text(oled, t, 88, 26, scale=2)
+        _center_text(oled, t, 88, 32, scale=2)
         w = 8 * len(t) * 2
         cx = 88 + w // 2 + 5
-        cy = 26 - 8 + 2
+        cy = 32 - 8 + 2
         oled.ellipse(cx, cy, 2, 2, 1, False)
 
 
