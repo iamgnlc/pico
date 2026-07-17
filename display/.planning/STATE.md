@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 2 executed — all 3 plans done, awaiting end-of-phase on-device verify
-last_updated: "2026-07-17T22:35:00.000Z"
+stopped_at: Phase 2 code-verified — awaiting on-device human-verify batch
+last_updated: "2026-07-17T22:45:00.000Z"
 last_activity: 2026-07-17
 progress:
   total_phases: 4
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-07-15)
 ## Current Position
 
 Phase: 2 of 4 (carousel + weather)
-Plan: 3/3 executed — all waves done (refactor, carousel, scheduler+spinner)
-Status: Executed — awaiting end-of-phase on-device human-verify batch
+Plan: 3/3 executed + verifier PARTIAL (code paths verified, hardware deferred)
+Status: Code-verified — awaiting on-device human-verify batch to close phase
 Last activity: 2026-07-17
 
 Progress: [░░░░░░░░░░] 0%
