@@ -69,7 +69,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 02-02-PLAN.md — Stub view modules + carousel dispatch + IRQ handlers + software debounce + poll scheduler + page-dot indicator. NAV-01..06.
+- [x] 02-02-PLAN.md — Stub view modules + carousel dispatch + IRQ handlers + software debounce + poll scheduler + page-dot indicator. NAV-01..06.
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -115,6 +115,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Secure Foundation | 3/3 | Complete    | 2026-07-15 |
-| 2. Carousel + Weather | 1/3 | In Progress | - |
+| 2. Carousel + Weather | 2/3 | In Progress | - |
 | 3. Clock View | 0/TBD | Not started | - |
 | 4. System View | 0/TBD | Not started | - |
