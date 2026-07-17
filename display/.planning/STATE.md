@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 2 COMPLETE — on-device human-verify passed
-last_updated: "2026-07-17T23:00:00.000Z"
+stopped_at: Phase 2.1 context gathered (8 decisions D-26..D-33)
+last_updated: "2026-07-17T23:15:00.000Z"
 last_activity: 2026-07-17
 progress:
-  total_phases: 4
+  total_phases: 5
   completed_phases: 2
   total_plans: 6
   completed_plans: 6
-  percent: 50
+  percent: 40
 ---
 
 # Project State
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-07-15)
 
 ## Current Position
 
-Phase: 2 of 4 COMPLETE (carousel + weather); Phase 2.1 (INSERTED) queued next
-Plan: 3/3 executed, verifier PASSED (code + on-device), 2 post-verification visual fixes landed
-Status: Complete — Phase 2.1 pending discuss/plan/execute
+Phase: 2.1 of 5 (INSERTED — location label + fetch retry)
+Plan: Not started — CONTEXT.md ready with 8 decisions D-26..D-33
+Status: Ready to plan
 Last activity: 2026-07-17
 
 Progress: [░░░░░░░░░░] 0%
@@ -70,6 +70,10 @@ Recent decisions affecting current work:
 - Phase 2 (D-22): On-view-switch = redraw cached data instantly; 600s cadence in the scheduler
 - Phase 2 (D-23): Boot sequence = "connecting..." static during wifi.connect(), then spinner during weather fetch
 - Phase 2 (D-24): Clock and System stubs render fully blank in Phase 2 — page dots only
+- Phase 2.1 (D-26): Location above temp; temp pushed down; combined block vertically balanced with icon (ref coords loc(88,18) temp(88,36) ring cy=30)
+- Phase 2.1 (D-27/28): Location scale=1, truncate-no-ellipsis; city → regionName → countryCode fallback cascade
+- Phase 2.1 (D-29/30): `weather.current()` extended to 4-tuple `(temp, code, is_day, location)`; location fetched every refresh alongside weather
+- Phase 2.1 (D-31/32/33): should_refresh reads _cache_status inline; 60s if not "ok", 600s if "ok"; boot-fetch failure = immediate 60s retry mode; stamp-at-start unchanged
 
 ### Pending Todos
 
