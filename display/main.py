@@ -83,6 +83,14 @@ if __name__ == "__main__":
     key0.irq(handler=_on_key0, trigger=Pin.IRQ_FALLING)
     key1.irq(handler=_on_key1, trigger=Pin.IRQ_FALLING)
 
+    # Pre-fetch render: draw "connecting..." + dots to the panel BEFORE the
+    # blocking wifi.connect() call so the user isn't staring at a black screen
+    # for up to 20s on cold boot. weather_view.render draws from its "pending"
+    # cache_status (initial value) which produces "connecting...".
+    weather_view.render(oled)
+    _draw_page_dots(oled, _current_idx)
+    oled.show()
+
     # Initial boot fetch. Blocking (up to ~20s on wifi timeout); presses during
     # this window are still captured by the IRQ handlers into _pending_dir and
     # dispatched immediately after this returns.
@@ -91,9 +99,18 @@ if __name__ == "__main__":
     oled.show()
 
     while True:
+        now = time.ticks_ms()
         if _pending_dir != 0:
             _current_idx = (_current_idx + _pending_dir) % 3
             _pending_dir = 0
+            VIEWS[_current_idx].render(oled)
+            _draw_page_dots(oled, _current_idx)
+            oled.show()
+        if weather_view.should_refresh(now):
+            weather_view.refresh(oled)
+            # Refresh's final render draws Weather content. If the user is on
+            # Clock or System, overpaint with the current view so the visible
+            # panel matches _current_idx.
             VIEWS[_current_idx].render(oled)
             _draw_page_dots(oled, _current_idx)
             oled.show()
