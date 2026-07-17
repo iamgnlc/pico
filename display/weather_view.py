@@ -6,6 +6,12 @@ import text_render
 import secrets
 
 
+_cached_temp = None
+_cached_code = None
+_cached_is_day = None
+_cache_status = "pending"
+
+
 def _center_text(oled, s, x_center, y_center, scale=1):
     w = 8 * len(s) * scale
     h = 8 * scale
@@ -14,19 +20,36 @@ def _center_text(oled, s, x_center, y_center, scale=1):
 
 def render(oled):
     oled.fill(0)
+    if _cache_status == "pending":
+        _center_text(oled, "connecting...", WIDTH // 2, 26)
+    elif _cache_status == "no_wifi":
+        _center_text(oled, "no wifi", WIDTH // 2, 26)
+    elif _cache_status == "no_data":
+        _center_text(oled, "no data", WIDTH // 2, 26)
+    else:
+        icons.draw(oled, 16, 16, _cached_code, _cached_is_day)
+        t = "{:.0f}".format(_cached_temp)
+        _center_text(oled, t, 88, 26, scale=2)
+        w = 8 * len(t) * 2
+        cx = 88 + w // 2 + 5
+        cy = 26 - 8 + 2
+        oled.ellipse(cx, cy, 2, 2, 1, False)
+
+
+def refresh(oled):
+    global _cached_temp, _cached_code, _cached_is_day, _cache_status
     ip = wifi.connect(secrets.WIFI_SSID, secrets.WIFI_PASSWORD)
     if not ip:
-        _center_text(oled, "no wifi", WIDTH // 2, HEIGHT // 2)
-    else:
-        temp, code, is_day = weather.current()
-        if temp is None:
-            _center_text(oled, "no data", WIDTH // 2, HEIGHT // 2)
-        else:
-            icons.draw(oled, 16, 16, code, is_day)
-            t = "{:.0f}".format(temp)
-            _center_text(oled, t, 88, HEIGHT // 2, scale=2)
-            w = 8 * len(t) * 2
-            cx = 88 + w // 2 + 5
-            cy = HEIGHT // 2 - 8 + 2
-            oled.ellipse(cx, cy, 2, 2, 1, False)
-    oled.show()
+        _cache_status = "no_wifi"
+        render(oled)
+        return
+    temp, code, is_day = weather.current()
+    if temp is None:
+        _cache_status = "no_data"
+        render(oled)
+        return
+    _cached_temp = temp
+    _cached_code = code
+    _cached_is_day = is_day
+    _cache_status = "ok"
+    render(oled)
