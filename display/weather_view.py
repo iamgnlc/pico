@@ -12,6 +12,7 @@ _cached_is_day = None
 _cache_status = "pending"
 
 _REFRESH_MS = 600_000   # WEATHER-03 cadence (matches REFRESH_SECONDS = 600)
+_RETRY_MS = 60_000      # WEATHER-09 fast-retry cadence when _cache_status != "ok"
 _last_refresh_ms = 0
 _spinner_frame = 0
 
@@ -37,7 +38,8 @@ def _draw_spinner(oled):
 
 
 def should_refresh(now_ms):
-    return time.ticks_diff(now_ms, _last_refresh_ms) >= _REFRESH_MS
+    interval = _REFRESH_MS if _cache_status == "ok" else _RETRY_MS
+    return time.ticks_diff(now_ms, _last_refresh_ms) >= interval
 
 
 def render(oled):
