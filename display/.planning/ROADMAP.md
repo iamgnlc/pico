@@ -112,11 +112,15 @@ Plans:
   2. After boot the device performs an NTP sync and re-syncs on a background cadence without blocking navigation
   3. When NTP has never succeeded (e.g. no WiFi at boot), the Clock view shows `--:--` instead of a wrong or blank time
 
-**Plans:** 1 plan
+**Plans:** 2 plans
 Plans:
 **Wave 1**
 
-- [ ] 03-01-PLAN.md — Replace clock_view.py stub with full NTP-synced HH:MM clock: two pure predicates (should_tick, should_sync) + sync + render + single bool `_synced` state. Add TZ_OFFSET config + boot sync + two poll-loop branches to main.py. CLOCK-01..05.
+- [x] 03-01-PLAN.md — Replace clock_view.py stub with full NTP-synced HH:MM clock: two pure predicates (should_tick, should_sync) + sync + render + single bool `_synced` state. Add TZ_OFFSET config + boot sync + two poll-loop branches to main.py. CLOCK-01..05. *(code-verified 3b506a0; superseded by 03-02 for CLOCK-02 handling)*
+
+**Wave 2** *(gap closure — TZ auto-derivation + persistence)*
+
+- [ ] 03-02-PLAN.md — Piggyback ip-api's `offset` field onto weather.current() (4-tuple); persist to `tz_offset.txt` on flash with load-at-boot + flash-wear guard. Remove `TZ_OFFSET` config from main.py. Clock renders `HH:MM` only when both `_synced` and `_cached_tz_offset is not None`. CLOCK-02 (redirected).
 
 **UI hint**: yes
 
