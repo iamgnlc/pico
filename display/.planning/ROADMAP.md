@@ -95,7 +95,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [x] 02.1-01-PLAN.md — Extend weather.current() to 4-tuple (temp, code, is_day, location); wire _cached_location + relayout render() with location label at (88, 18), temp at (88, 36), ring cy=30. WEATHER-08.
+- [ ] 02.1-01-PLAN.md — Extend weather.current() to 4-tuple (temp, code, is_day, location); wire _cached_location + relayout render() with location label at (88, 18), temp at (88, 36), ring cy=30. WEATHER-08.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -142,6 +142,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Secure Foundation | 3/3 | Complete    | 2026-07-15 |
 | 2. Carousel + Weather | 3/3 | Complete    | 2026-07-17 |
-| 2.1. Location Label + Fetch Retry (INSERTED) | 1/2 | In Progress | - |
+| 2.1. Location Label + Fetch Retry (INSERTED) | 0/2 | Not started | - |
 | 3. Clock View | 0/TBD | Not started | - |
 | 4. System View | 0/TBD | Not started | - |

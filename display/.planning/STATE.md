@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 2.1 Wave 1 complete (02.1-01 done)
-last_updated: "2026-07-17T22:55:00.000Z"
+stopped_at: Phase 2.1 planned (2 plans in 2 waves, plan-check PASSED)
+last_updated: "2026-07-17T22:40:00.000Z"
 last_activity: 2026-07-17
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 8
-  completed_plans: 7
-  percent: 47
+  completed_plans: 6
+  percent: 40
 ---
 
 # Project State
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-07-15)
 ## Current Position
 
 Phase: 2.1 of 5 (INSERTED — location label + fetch retry)
-Plan: 1/2 executed — 02.1-01 done (weather.py 4-tuple + weather_view location cache + relayout)
-Status: In progress — awaiting per-wave gate before Wave 2 (02.1-02)
+Plan: 0/2 executed (Wave 1 = 02.1-01, Wave 2 = 02.1-02) — plan-check PASSED
+Status: Ready to execute
 Last activity: 2026-07-17
 
 Progress: [░░░░░░░░░░] 0%
