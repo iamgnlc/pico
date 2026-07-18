@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 4 planned (1 plan, 1 wave); ready to execute — last v1 phase
-last_updated: "2026-07-18T19:15:00.000Z"
+stopped_at: Phase 4 code-complete (Plan 04-01 shipped, 210f512); awaiting end-of-phase human-verify batch — last v1 gate
+last_updated: "2026-07-18T19:30:00.000Z"
 last_activity: 2026-07-18
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 10
-  completed_plans: 9
-  percent: 66
+  completed_plans: 10
+  percent: 80
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-15)
 
 **Core value:** Pressing a button changes the view instantly and reliably; each view stays accurate on its own refresh cadence without user intervention.
-**Current focus:** Phase 4 (System View) planned — ready to execute. Last v1 phase.
+**Current focus:** Phase 4 (System View) code-complete — awaiting human-verify batch. All v1 phases code-complete after this closes.
 
 ## Current Position
 
-Phase: 4 of 5 (System View) — 1 plan in 1 wave (04-01-PLAN.md); CONTEXT + PLAN complete
-Plan: 0/1 executed (Wave 1 = 04-01)
-Status: Ready to execute
+Phase: 4 of 5 (System View)
+Plan: 1/1 code-verified (04-01, commit 210f512) — human-verify deferred
+Status: Awaiting on-device human-verify batch (8 scenarios)
 Last activity: 2026-07-18
 
 Progress: [░░░░░░░░░░] 0%
@@ -110,6 +110,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-18T19:15:00Z
-Stopped at: Phase 4 planned — 1 plan, 1 wave (04-01-PLAN.md, 5 tasks: 3 auto + 1 verify-only + 1 blocking human-verify). Ready for /gsd:execute-phase 4.
-Resume file: .planning/phases/04-system-view/04-01-PLAN.md
+Last session: 2026-07-18T19:30:00Z
+Stopped at: Phase 4 Plan 04-01 code-complete and committed (210f512); on-device human-verify batch (8 scenarios) is the only remaining gate before v1 is fully verified. Watch for the T-04-01-06 SSID-as-bytes defensive fallback (add .decode() if bytes appear).
+Resume file: .planning/phases/04-system-view/04-01-SUMMARY.md § "Deferred to End-of-Phase Batch" for verify steps
