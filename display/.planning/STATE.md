@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: v1_complete
-stopped_at: v1 fully verified 2026-07-18 — all 5 phases (1, 2, 2.1, 3, 4) code-complete AND on-device human-verified. Ready for /gsd:complete-milestone.
-last_updated: "2026-07-18T19:45:00.000Z"
+status: v1_complete_with_refactor
+stopped_at: v1 fully verified 2026-07-18 + post-verify refactor bb2d763 (weather.py → bootstrap.py, wifi.py absorbed). Awaiting operator spot-check + packaging choice (fold into v1.0 vs patch v1.0.1) before archive.
+last_updated: "2026-07-18T20:00:00.000Z"
 last_activity: 2026-07-18
 progress:
   total_phases: 5
@@ -107,9 +107,10 @@ None yet.
 |---|-------------|------|--------|-----------|
 | 260718-scope-cleanup-phase-2.1 | Narrow Phase 2.1 scope to retry-only after Plan 02.1-01 revert | 2026-07-18 | — | [260718-scope-cleanup-phase-2.1](./quick/260718-scope-cleanup-phase-2.1/) |
 | 260718-remove-spinner-tune-cadence | Retire D-23 spinner + update D-35 NTP cadence to 6h | 2026-07-18 | `93064bd` | [260718-remove-spinner-tune-cadence](./quick/260718-remove-spinner-tune-cadence/) |
+| 260718-rename-bootstrap | Rename weather.py → bootstrap.py; absorb wifi.connect into a private helper; 6-tuple fetch() | 2026-07-18 | `bb2d763` | [260718-rename-bootstrap](./quick/260718-rename-bootstrap/) |
 
 ## Session Continuity
 
-Last session: 2026-07-18T19:45:00Z
-Stopped at: v1 milestone COMPLETE. All phases + plans + human-verify done. Ready for `/gsd:complete-milestone` when the operator wants to archive v1 and begin v2 planning. T-04-01-06 SSID-as-bytes did NOT manifest on this firmware — no follow-up fixes needed.
-Resume file: n/a — v1 is closed. `/gsd:complete-milestone` is the natural next command.
+Last session: 2026-07-18T20:00:00Z
+Stopped at: v1 milestone COMPLETE + post-verify refactor bb2d763 landed (weather.py → bootstrap.py, wifi.py absorbed, 6-tuple fetch()). Two open items before `/gsd:complete-milestone` can finish: (1) operator spot-check of the refactor on-device, (2) packaging choice — fold into v1.0 or tag v1.0.1.
+Resume file: .planning/quick/260718-rename-bootstrap/260718-rename-bootstrap-SUMMARY.md § "Packaging Decision"

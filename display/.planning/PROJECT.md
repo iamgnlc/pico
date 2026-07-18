@@ -17,8 +17,7 @@ Pressing a button changes the view instantly and reliably; each view stays accur
 - ✓ SH1107 SPI driver with framebuf.FrameBuffer subclass — existing (`sh1107.py`)
 - ✓ Text rendering with integer scale factor — existing (`text_render.py`)
 - ✓ Weather-icon glyphs for Open-Meteo weather codes — existing (`icons.py`)
-- ✓ WiFi connect helper with timeout — existing (`wifi.py`)
-- ✓ Weather fetch via ip-api geolocation + Open-Meteo forecast — existing (`weather.py`)
+- ✓ Bootstrap round-trip: WiFi connect + ip-api geolocation + Open-Meteo forecast (single 6-tuple return) — existing (`bootstrap.py`, consolidated from former `wifi.py` + `weather.py` at post-v1 refactor)
 - ✓ Single-view weather demo with 10-minute refresh — existing (`main.py`)
 - ✓ Optional 180° display rotation via `ROTATE` config — existing (`main.py:12`, `sh1107.py`)
 

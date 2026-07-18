@@ -79,17 +79,17 @@ A MicroPython app for a Raspberry Pi Pico W driving a Waveshare Pico-OLED-1.3 HA
 ## Frameworks
 
 - `framebuf` (MicroPython stdlib) - Frame buffer abstraction; `OLED` class subclasses `framebuf.FrameBuffer` to inherit `text()`, `fill()`, `pixel()`, `rect()`, `ellipse()`, `line()`, `vline()`, `hline()` methods (`sh1107.py:17`)
-- `network` (MicroPython stdlib) - WiFi stack for connecting to 2.4GHz networks via `WLAN` class (`wifi.py:2`)
+- `network` (MicroPython stdlib) - WiFi stack for connecting to 2.4GHz networks via `WLAN` class (`bootstrap.py:1`)
 - `machine` (MicroPython stdlib) - GPIO and SPI control; `Pin()` for digital I/O, `SPI()` for serial peripheral interface (`sh1107.py:1`)
-- `urequests` (MicroPython stdlib equivalent) - HTTP client for API calls (`weather.py:1`)
-- `time` (MicroPython stdlib) - Sleep and timing (`sh1107.py:4`, `wifi.py:2`, `main.py:6`)
+- `urequests` (MicroPython stdlib equivalent) - HTTP client for API calls (`bootstrap.py:3`)
+- `time` (MicroPython stdlib) - Sleep and timing (`sh1107.py:4`, `bootstrap.py:2`, `main.py:6`)
 - `micropython` (stdlib) - `const()` for compile-time constants (`sh1107.py:2`)
 
 ## Key Dependencies
 
 - `framebuf` module - OLED rendering depends on `MONO_HMSB` format (`sh1107.py:30`); format switch to `MONO_VLSB` will scramble pixel layout
 - `machine.SPI` - SPI bus 1 at 20 MHz (`sh1107.py:25`); hardware constraint requires CS toggling per-byte for correct GDDRAM latching (`sh1107.py:83-90`)
-- `urequests` - HTTP requests to `ip-api.com` and `api.open-meteo.com` (`weather.py:6, 13`)
+- `urequests` - HTTP requests to `ip-api.com` and `api.open-meteo.com` (`bootstrap.py`, inside `fetch()`)
 
 ## Hardware Pinout (Fixed by HAT)
 
@@ -116,8 +116,8 @@ A MicroPython app for a Raspberry Pi Pico W driving a Waveshare Pico-OLED-1.3 HA
 
 ## Configuration
 
-- `WIFI_SSID` - Network name to connect to
-- `WIFI_PASSWORD` - Network password (WARNING: hardcoded in main.py)
+- `WIFI_SSID` - Network name to connect to (in gitignored `secrets.py`)
+- `WIFI_PASSWORD` - Network password (in gitignored `secrets.py`)
 - `REFRESH_SECONDS` - Weather update interval (default 600s = 10 min)
 - `ROTATE` - Boolean; `True` flips display 180° via pixel-level rotation in `show()` (`sh1107.py:66-76`)
 - Display offset `0x60` (96): causes wrap in GDDRAM region; physical rows 0-31 show GDDRAM 96-127; physical rows 32-63 show GDDRAM 0-31
@@ -136,7 +136,7 @@ A MicroPython app for a Raspberry Pi Pico W driving a Waveshare Pico-OLED-1.3 HA
 
 ## Naming Patterns
 
-- Module names use `snake_case`: `sh1107.py`, `text_render.py`, `weather.py`, `wifi.py`, `icons.py`, `main.py`
+- Module names use `snake_case`: `sh1107.py`, `text_render.py`, `bootstrap.py`, `icons.py`, `main.py`, plus the view modules `weather_view.py`, `clock_view.py`, `system_view.py`
 - No file extensions beyond `.py`
 - Use `snake_case` for all functions: `_center_text()`, `_render()`, `connect()`, `current()`
 - Private/internal functions prefixed with single underscore: `_init()`, `_cmd()`, `_kind()`, `_sun()`, `_moon()`, `_cloud()`, `_rain()`, `_snow()`, `_thunder()`, `_fog()`, `_center_text()`, `_render()`
@@ -160,15 +160,15 @@ A MicroPython app for a Raspberry Pi Pico W driving a Waveshare Pico-OLED-1.3 HA
 ## Import Organization
 
 - `sh1107.py`: `from machine import Pin, SPI` → `from micropython import const` → `import framebuf` → `import time`
-- `main.py`: `from sh1107 import OLED, WIDTH, HEIGHT` → `import wifi` → `import weather` → `import icons` → `import text_render` → `import time`
+- `main.py`: `from sh1107 import OLED, WIDTH, HEIGHT` → `from machine import Pin` → `import weather_view` → `import clock_view` → `import system_view` → `import text_render` → `import time`
 - `text_render.py`: `import framebuf`
-- `weather.py`: `import urequests`
-- `wifi.py`: `import network` → `import time`
+- `bootstrap.py`: `import network` → `import time` → `import urequests`
+- `weather_view.py`: `from sh1107 import WIDTH, HEIGHT` → `import bootstrap` → `import clock_view` → `import system_view` → `import icons` → `import text_render` → `import time`
 
 ## Error Handling
 
 - Bare `except Exception:` blocks for network/API calls where graceful degradation is needed
-- Example in `weather.py`: `except Exception: return None, None, None`
+- Example in `bootstrap.py`: `except Exception: return ip, None, None, None, None, None` (WiFi-ok-but-API-fail; the `ip` argument preserves the ability to distinguish `no_wifi` from `no_data` in the caller)
 - Example in `main.py`: checks for `None` return values to display fallback UI ("no wifi", "no data")
 - No explicit error logging; failures are silent with UI fallback
 
@@ -245,8 +245,7 @@ A MicroPython app for a Raspberry Pi Pico W driving a Waveshare Pico-OLED-1.3 HA
 |-----------|----------------|------|
 | OLED Driver | Hardware initialization, SPI comms, framebuffer→GDDRAM transfer, power management | `sh1107.py` |
 | Application | User configuration, UI rendering loop, weather fetch orchestration | `main.py` |
-| WiFi | Network connectivity, IP retrieval | `wifi.py` |
-| Weather | Remote API calls (geolocation + weather), JSON parsing | `weather.py` |
+| Bootstrap | WiFi connect + ip-api geolocation (lat/lon/offset/query) + Open-Meteo weather, JSON parsing, unified 6-tuple return | `bootstrap.py` |
 | Icons | Weather condition → visual rendering (sun/moon/cloud/rain/snow/thunder/fog) | `icons.py` |
 | Text Render | Font scaling via double-buffer framebuf technique | `text_render.py` |
 
@@ -318,7 +317,7 @@ A MicroPython app for a Raspberry Pi Pico W driving a Waveshare Pico-OLED-1.3 HA
 
 ## Architectural Constraints
 
-- **Threading:** Single-threaded event loop. `wifi.connect()` and `weather.current()` are blocking. No async/await. Refresh cycle is synchronous.
+- **Threading:** Single-threaded event loop. `bootstrap.fetch()` is blocking (~20s wifi timeout + <2s API round-trip). No async/await. Refresh cycle is synchronous.
 - **Global state:** None — all state is local or instance variables within `OLED` class.
 - **Circular imports:** None. Dependency graph is acyclic: `main.py` → {`sh1107`, `wifi`, `weather`, `icons`, `text_render`}, no feedback.
 - **Memory model:** Framebuffer is 1024 bytes fixed. Rotation creates additional 1024-byte temporary buffer. Total ~2KB active + MicroPython runtime heap.
@@ -326,7 +325,7 @@ A MicroPython app for a Raspberry Pi Pico W driving a Waveshare Pico-OLED-1.3 HA
 
 ## Error Handling
 
-- WiFi connection timeout → `wifi.connect()` returns `None` after 20s, `main.py` displays "no wifi"
+- WiFi connection timeout → `bootstrap.fetch()` returns `(None, None, None, None, None, None)` after 20s, `weather_view` sets `_cache_status = "no_wifi"` and displays "no wifi"
 - Weather API failure (network, JSON parse, HTTP error) → `weather.current()` catches all exceptions, returns `(None, None, None)`, `main.py` displays "no data"
 - No exception bubbling; all failures result in fallback UI display
 
