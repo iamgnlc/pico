@@ -112,7 +112,12 @@ Plans:
   2. After boot the device performs an NTP sync and re-syncs on a background cadence without blocking navigation
   3. When NTP has never succeeded (e.g. no WiFi at boot), the Clock view shows `--:--` instead of a wrong or blank time
 
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+**Wave 1**
+
+- [ ] 03-01-PLAN.md — Replace clock_view.py stub with full NTP-synced HH:MM clock: two pure predicates (should_tick, should_sync) + sync + render + single bool `_synced` state. Add TZ_OFFSET config + boot sync + two poll-loop branches to main.py. CLOCK-01..05.
+
 **UI hint**: yes
 
 ### Phase 4: System View
@@ -140,5 +145,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Secure Foundation | 3/3 | Complete    | 2026-07-15 |
 | 2. Carousel + Weather | 3/3 | Complete    | 2026-07-17 |
 | 2.1. Fetch Retry (INSERTED) | 1/1 | Complete    | 2026-07-18 |
-| 3. Clock View | 0/TBD | Not started | - |
+| 3. Clock View | 0/1 | Planned | - |
 | 4. System View | 0/TBD | Not started | - |
