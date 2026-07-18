@@ -41,7 +41,8 @@ Five atomic commits under the `quick-260718-scope-cleanup` scope, one per task:
 | `f4438db` | Task 2: narrow Phase 2.1 in ROADMAP.md |
 | `6f31909` | Task 3: trim CONTEXT.md to retry-only |
 | `d787dd4` | Task 4: refresh 02.1-02-PLAN.md interfaces |
-| *(this commit)* | Task 5 + docs: STATE.md update, PLAN.md, SUMMARY.md |
+| `22bc01a` | Task 5 + docs: STATE.md update, PLAN.md, SUMMARY.md |
+| *(this commit)* | Follow-up: delete stale `02.1-01-PLAN.md` |
 
 ## Verification
 
