@@ -31,11 +31,11 @@
 
 ### Clock View
 
-- [ ] **CLOCK-01**: The Clock view shows the current time synced via NTP over WiFi
-- [ ] **CLOCK-02**: The clock applies a timezone offset derived automatically from ip-api geolocation (piggybacked on the existing weather fetch); the offset is persisted to `tz_offset.txt` on the Pico's flash and loaded at module import so subsequent boots have the offset before the first weather fetch completes
-- [ ] **CLOCK-03**: The Clock view updates every second while displayed
-- [ ] **CLOCK-04**: The Clock view re-syncs NTP on a reasonable cadence (once at boot + periodically)
-- [ ] **CLOCK-05**: The Clock view shows a clear error state when NTP has never succeeded (e.g. `--:--`)
+- [x] **CLOCK-01**: The Clock view shows the current time synced via NTP over WiFi
+- [x] **CLOCK-02**: The clock applies a timezone offset derived automatically from ip-api geolocation (piggybacked on the existing weather fetch); the offset is persisted to `tz_offset.txt` on the Pico's flash and loaded at module import so subsequent boots have the offset before the first weather fetch completes
+- [x] **CLOCK-03**: The Clock view updates every second while displayed
+- [x] **CLOCK-04**: The Clock view re-syncs NTP on a reasonable cadence (once at boot + periodically)
+- [x] **CLOCK-05**: The Clock view shows a clear error state when NTP has never succeeded (e.g. `--:--`)
 
 ### System View
 
@@ -98,11 +98,11 @@
 | WEATHER-04 | Phase 2 | Complete |
 | WEATHER-05 | Phase 2 | Complete |
 | WEATHER-09 | Phase 2.1 | Complete |
-| CLOCK-01 | Phase 3 | Pending |
-| CLOCK-02 | Phase 3 | Pending |
-| CLOCK-03 | Phase 3 | Pending |
-| CLOCK-04 | Phase 3 | Pending |
-| CLOCK-05 | Phase 3 | Pending |
+| CLOCK-01 | Phase 3 | Complete |
+| CLOCK-02 | Phase 3 | Complete |
+| CLOCK-03 | Phase 3 | Complete |
+| CLOCK-04 | Phase 3 | Complete |
+| CLOCK-05 | Phase 3 | Complete |
 | SYSTEM-01 | Phase 4 | Pending |
 | SYSTEM-02 | Phase 4 | Pending |
 | SYSTEM-03 | Phase 4 | Pending |

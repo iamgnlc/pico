@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Secure Foundation** - Rotate exposed credentials, move to secrets.py, fix degree symbol (completed 2026-07-15)
 - [x] **Phase 2: Carousel + Weather** - Two-button carousel navigation and complete Weather view (completed 2026-07-17)
 - [x] **Phase 2.1: Fetch Retry** (INSERTED) - Retry every 60s on fetch failure until first success, then revert to 600s (completed 2026-07-18)
-- [ ] **Phase 3: Clock View** - NTP-synced clock with timezone offset and per-second updates
+- [x] **Phase 3: Clock View** - NTP-synced clock with auto-derived timezone offset and per-minute display updates (completed 2026-07-18)
 - [ ] **Phase 4: System View** - WiFi diagnostics view completing the v1 carousel
 
 ## Phase Details
@@ -120,7 +120,7 @@ Plans:
 
 **Wave 2** *(gap closure — TZ auto-derivation + persistence)*
 
-- [ ] 03-02-PLAN.md — Piggyback ip-api's `offset` field onto weather.current() (4-tuple); persist to `tz_offset.txt` on flash with load-at-boot + flash-wear guard. Remove `TZ_OFFSET` config from main.py. Clock renders `HH:MM` only when both `_synced` and `_cached_tz_offset is not None`. CLOCK-02 (redirected).
+- [x] 03-02-PLAN.md — Piggyback ip-api's `offset` field onto weather.current() (4-tuple); persist to `tz_offset.txt` on flash with load-at-boot + flash-wear guard. Remove `TZ_OFFSET` config from main.py. Clock renders `HH:MM` only when both `_synced` and `_cached_tz_offset is not None`. CLOCK-02 (redirected). *(mid-verify fix `c23bb5a` — ip-api requires `?fields=` to include offset)*
 
 **UI hint**: yes
 
@@ -149,5 +149,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Secure Foundation | 3/3 | Complete    | 2026-07-15 |
 | 2. Carousel + Weather | 3/3 | Complete    | 2026-07-17 |
 | 2.1. Fetch Retry (INSERTED) | 1/1 | Complete    | 2026-07-18 |
-| 3. Clock View | 0/1 | Planned | - |
+| 3. Clock View | 2/2 | Complete    | 2026-07-18 |
 | 4. System View | 0/TBD | Not started | - |
