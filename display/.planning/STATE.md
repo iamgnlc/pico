@@ -1,17 +1,20 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: v1_complete_with_refactor
-stopped_at: v1 fully verified 2026-07-18 + post-verify refactor bb2d763 (weather.py → bootstrap.py, wifi.py absorbed). Awaiting operator spot-check + packaging choice (fold into v1.0 vs patch v1.0.1) before archive.
-last_updated: "2026-07-18T20:00:00.000Z"
+milestone: none
+milestone_name: (between milestones)
+previous_milestone: v1.0
+previous_milestone_tag: v1.0
+previous_milestone_archived_at: "2026-07-18T20:15:00.000Z"
+status: milestone_archived
+stopped_at: v1.0 archived and tagged (fold-into-v1.0 packaging). Ready for /gsd:new-milestone when the operator wants to scope v1.1 or v2.
+last_updated: "2026-07-18T20:15:00.000Z"
 last_activity: 2026-07-18
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 10
-  completed_plans: 10
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -111,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-18T20:00:00Z
-Stopped at: v1 milestone COMPLETE + post-verify refactor bb2d763 landed (weather.py → bootstrap.py, wifi.py absorbed, 6-tuple fetch()). Two open items before `/gsd:complete-milestone` can finish: (1) operator spot-check of the refactor on-device, (2) packaging choice — fold into v1.0 or tag v1.0.1.
-Resume file: .planning/quick/260718-rename-bootstrap/260718-rename-bootstrap-SUMMARY.md § "Packaging Decision"
+Last session: 2026-07-18T20:15:00Z
+Stopped at: v1.0 milestone archived and git-tagged (packaging option A — refactor folded in). ROADMAP.md collapsed to milestone-history table; REQUIREMENTS.md moved into milestones/v1.0-REQUIREMENTS.md; PROJECT.md gained "Current State" + "Next Milestone Goals" sections with the v1 context wrapped in `<details>`. Ready for `/gsd:new-milestone` when the operator wants to begin v1.1 or v2 scoping.
+Resume file: n/a — between milestones. `/gsd:new-milestone` is the natural next command.

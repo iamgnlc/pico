@@ -1,5 +1,28 @@
 # Pico OLED Multi-View
 
+## Current State — v1.0 SHIPPED (2026-07-18)
+
+All 4 v1 requirements categories delivered end-to-end and human-verified on device:
+
+- **Security**: SEC-01/02/03 — WiFi creds gitignored, secrets.py.example committed, prior creds rotated
+- **Navigation**: NAV-01..06 — two-button carousel, debounce, wrap-around, page dots, boot-to-Weather
+- **Weather view**: WEATHER-01..05, WEATHER-09 — icon + degree-glyph temp, 10-min refresh + view-switch redraw, error states, 60s fetch-retry
+- **Clock view**: CLOCK-01..05 — NTP-synced HH:MM, auto-derived timezone (ip-api piggyback + persistence), 6h re-sync + 60s retry, `--:--` fallback
+- **System view**: SYSTEM-01..04 — SSID + WAN IP + drawn signal bars, uniform `--` offline state
+
+Git tag: `v1.0` at `a20bb0e`. Archive: `.planning/milestones/v1.0-ROADMAP.md` + `v1.0-REQUIREMENTS.md`.
+
+**WEATHER-08 (location label) was dropped mid-milestone** after Plan 02.1-01 shipped and human-verify caught a layout regression. See archive for the full audit trail.
+
+## Next Milestone Goals
+
+*No milestone declared yet. Run `/gsd:new-milestone` to begin scoping. Deferred v2 candidates from v1's REQUIREMENTS.md § "v2 Requirements" (WEATHER-06/07, CLOCK-06/07, NAV-07/08) will need to be re-scoped and prioritized.*
+
+Additional deferred UX ideas surfaced during v1 phase discussions (see `milestones/v1.0-ROADMAP.md § Deferred UX Ideas` for the full list): TZ label, date display, sync indicator, "stale" state, 12h AM/PM, seconds, dBm text, last-known SSID marker, local IP alongside WAN IP, etc.
+
+<details>
+<summary>v1.0 archived context (click to expand)</summary>
+
 ## What This Is
 
 A MicroPython app for a Raspberry Pi Pico W driving a Waveshare Pico-OLED-1.3 HAT (128×64, SH1107). Two physical buttons on the HAT cycle through a small set of always-on info views — weather, clock, system status — with a page-dot indicator showing position in the carousel.
@@ -100,4 +123,6 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-15 after initialization*
+*Last updated: 2026-07-15 after initialization; archived under v1.0 milestone close on 2026-07-18.*
+
+</details>
