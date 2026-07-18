@@ -30,7 +30,7 @@ Replace the current `clock_view.py` stub with a working clock view:
 - **D-34:** The Clock view displays local time as `HH:MM` in 24-hour format with no seconds (e.g. `19:47`). The panel repaints only at minute boundaries when Clock is the current view — one panel write per minute (vs 60/min for seconds). Rationale: matches the project's "small, glanceable, minimum-state" ethos (page dots over labels, degree ring over font swap, single-tuple weather cache) and yields a much simpler tick predicate.
 
 ### NTP re-sync cadence (D-35)
-- **D-35:** After the first successful NTP sync, the device re-syncs from NTP every 1 hour (`_SYNC_MS = 3_600_000`). Chosen from options {never, 1h, 6h, 24h} for the tightest realistic drift bound within the WiFi-cost envelope — RP2040 clock drift is small enough within an hour to be visually undetectable in `HH:MM` display.
+- **D-35** *(updated 2026-07-18 — see `.planning/quick/260718-remove-spinner-tune-cadence/`)*: After the first successful NTP sync, the device re-syncs from NTP every 6 hours (`_SYNC_MS = 21_600_000`). Originally set to 1 hour during discuss-phase; relaxed to 6 hours at operator request to reduce WiFi churn. RP2040 drift over 6 hours remains well below the 1-minute display resolution.
 
 ### NTP failure retry (D-36)
 - **D-36:** On any NTP sync failure (WiFi down, DNS fail, NTP server unresponsive), the device retries every 60 s until the first success, then reverts to the D-35 1-hour cadence. Symmetric with Phase 2.1's `weather_view.should_refresh` predicate (D-31): `clock_view.should_sync(now_ms)` reads `_synced` inline — 1 h if `_synced`, 60 s otherwise. `_RETRY_MS = 60_000` module constant.

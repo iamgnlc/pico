@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 3 complete (human-verify approved 2026-07-18 after c23bb5a URL fix); Phase 4 (System View) is next
-last_updated: "2026-07-18T18:15:00.000Z"
+stopped_at: Cross-phase quick task landed (spinner removed, NTP cadence 1h→6h); Phase 4 (System View) is next
+last_updated: "2026-07-18T18:45:00.000Z"
 last_activity: 2026-07-18
 progress:
   total_phases: 5
@@ -78,6 +78,7 @@ Recent decisions affecting current work:
 - Phase 3 (D-39): `HH:MM` scale 3 centered at (64, 27); no TZ label / date / sync indicator (all deferred to v2)
 - Phase 3 (D-40): Single boolean `_synced` state; no enum
 - Phase 3 (2026-07-18, Plan 03-02): CLOCK-02 redirected from "hardcoded `TZ_OFFSET` in main.py" to "auto-derived from ip-api's `offset` field on each weather fetch, persisted to `tz_offset.txt` with flash-wear guard, loaded at module import so subsequent boots show correct time as soon as NTP syncs". Clock renders `HH:MM` iff both `_synced` and `_cached_tz_offset is not None`. T-03-01-07 (circular import) retired.
+- Cross-phase (2026-07-18, quick 260718-remove-spinner-tune-cadence): Phase 2 D-23 (spinner during weather HTTP fetch) RETIRED. Phase 3 D-35 (NTP re-sync cadence) UPDATED from 1h to 6h. Weather refresh (600s) and both retry cadences (60s) unchanged. Predicate shapes unchanged.
 
 ### Pending Todos
 
@@ -99,9 +100,10 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260718-scope-cleanup-phase-2.1 | Narrow Phase 2.1 scope to retry-only after Plan 02.1-01 revert | 2026-07-18 | — | [260718-scope-cleanup-phase-2.1](./quick/260718-scope-cleanup-phase-2.1/) |
+| 260718-remove-spinner-tune-cadence | Retire D-23 spinner + update D-35 NTP cadence to 6h | 2026-07-18 | `93064bd` | [260718-remove-spinner-tune-cadence](./quick/260718-remove-spinner-tune-cadence/) |
 
 ## Session Continuity
 
-Last session: 2026-07-18T18:15:00Z
-Stopped at: Phase 3 complete (on-device human-verify approved after the ip-api URL fix c23bb5a). Phase 4 (System View) is next and has no CONTEXT.md yet — start with /gsd:discuss-phase 4.
+Last session: 2026-07-18T18:45:00Z
+Stopped at: Cross-phase quick task landed — spinner removed (D-23 retired), clock NTP cadence bumped to 6h (D-35 updated). Weather refresh + retry cadences unchanged. Phase 4 (System View) is next and has no CONTEXT.md yet — start with /gsd:discuss-phase 4.
 Resume file: n/a — Phase 4 needs discuss-phase before an executable plan exists.
