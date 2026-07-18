@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Cross-phase quick task landed (spinner removed, NTP cadence 1h→6h); Phase 4 (System View) is next
-last_updated: "2026-07-18T18:45:00.000Z"
+stopped_at: Phase 4 context gathered (5 decisions D-41..D-45 + WAN IP clarification); ready to plan
+last_updated: "2026-07-18T19:00:00.000Z"
 last_activity: 2026-07-18
 progress:
   total_phases: 5
@@ -79,6 +79,12 @@ Recent decisions affecting current work:
 - Phase 3 (D-40): Single boolean `_synced` state; no enum
 - Phase 3 (2026-07-18, Plan 03-02): CLOCK-02 redirected from "hardcoded `TZ_OFFSET` in main.py" to "auto-derived from ip-api's `offset` field on each weather fetch, persisted to `tz_offset.txt` with flash-wear guard, loaded at module import so subsequent boots show correct time as soon as NTP syncs". Clock renders `HH:MM` iff both `_synced` and `_cached_tz_offset is not None`. T-03-01-07 (circular import) retired.
 - Cross-phase (2026-07-18, quick 260718-remove-spinner-tune-cadence): Phase 2 D-23 (spinner during weather HTTP fetch) RETIRED. Phase 3 D-35 (NTP re-sync cadence) UPDATED from 1h to 6h. Weather refresh (600s) and both retry cadences (60s) unchanged. Predicate shapes unchanged.
+- Phase 4 (D-41): System view = view-switch-only refresh. No `should_tick` predicate. Reads `network.WLAN` primitives inline in `render(oled)`.
+- Phase 4 (D-42): Signal strength = 4 drawn bars (RSSI thresholds -55/-65/-75); no dBm text.
+- Phase 4 (D-43): Layout = 3-line left-aligned list at scale 1 (SSID / IP / Signal + bars) inside rows 0-53.
+- Phase 4 (D-43-bis): IP field = WAN IP (public), sourced from ip-api's `query` field via extended `weather.current()` 5-tuple; cached RAM-only in `system_view._cached_wan_ip`; shows `--` when either offline OR cache is None.
+- Phase 4 (D-44): Offline UX = uniform `--` for all three fields (SSID, IP, empty bars). No last-known SSID with `(offline)` marker.
+- Phase 4 (D-45): System view is READ-ONLY — no reconnect attempts. Relies on `weather_view.refresh`'s existing 1-min retry / 10-min normal cadence.
 
 ### Pending Todos
 
@@ -104,6 +110,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-18T18:45:00Z
-Stopped at: Cross-phase quick task landed — spinner removed (D-23 retired), clock NTP cadence bumped to 6h (D-35 updated). Weather refresh + retry cadences unchanged. Phase 4 (System View) is next and has no CONTEXT.md yet — start with /gsd:discuss-phase 4.
-Resume file: n/a — Phase 4 needs discuss-phase before an executable plan exists.
+Last session: 2026-07-18T19:00:00Z
+Stopped at: Phase 4 context gathered — 6 decisions locked (D-41..D-45 + D-43-bis WAN IP clarification) across 5 gray areas. Ready for /gsd:plan-phase 4.
+Resume file: .planning/phases/04-system-view/04-CONTEXT.md
