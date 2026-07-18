@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Phase 4 code-complete (Plan 04-01 shipped, 210f512); awaiting end-of-phase human-verify batch — last v1 gate
-last_updated: "2026-07-18T19:30:00.000Z"
+status: v1_complete
+stopped_at: v1 fully verified 2026-07-18 — all 5 phases (1, 2, 2.1, 3, 4) code-complete AND on-device human-verified. Ready for /gsd:complete-milestone.
+last_updated: "2026-07-18T19:45:00.000Z"
 last_activity: 2026-07-18
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 10
   completed_plans: 10
-  percent: 80
+  percent: 100
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-15)
 
 **Core value:** Pressing a button changes the view instantly and reliably; each view stays accurate on its own refresh cadence without user intervention.
-**Current focus:** Phase 4 (System View) code-complete — awaiting human-verify batch. All v1 phases code-complete after this closes.
+**Current focus:** v1 COMPLETE — all 24 v1 requirements delivered, all 5 phases code + on-device verified. Ready for `/gsd:complete-milestone` to archive and plan v2.
 
 ## Current Position
 
-Phase: 4 of 5 (System View)
-Plan: 1/1 code-verified (04-01, commit 210f512) — human-verify deferred
-Status: Awaiting on-device human-verify batch (8 scenarios)
+Phase: 5 of 5 (v1 milestone complete)
+Plan: 10/10 shipped and verified
+Status: v1 milestone ready to archive
 Last activity: 2026-07-18
 
 Progress: [░░░░░░░░░░] 0%
@@ -110,6 +110,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-18T19:30:00Z
-Stopped at: Phase 4 Plan 04-01 code-complete and committed (210f512); on-device human-verify batch (8 scenarios) is the only remaining gate before v1 is fully verified. Watch for the T-04-01-06 SSID-as-bytes defensive fallback (add .decode() if bytes appear).
-Resume file: .planning/phases/04-system-view/04-01-SUMMARY.md § "Deferred to End-of-Phase Batch" for verify steps
+Last session: 2026-07-18T19:45:00Z
+Stopped at: v1 milestone COMPLETE. All phases + plans + human-verify done. Ready for `/gsd:complete-milestone` when the operator wants to archive v1 and begin v2 planning. T-04-01-06 SSID-as-bytes did NOT manifest on this firmware — no follow-up fixes needed.
+Resume file: n/a — v1 is closed. `/gsd:complete-milestone` is the natural next command.

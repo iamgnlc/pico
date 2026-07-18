@@ -39,10 +39,10 @@
 
 ### System View
 
-- [ ] **SYSTEM-01**: The System view displays the connected WiFi SSID
-- [ ] **SYSTEM-02**: The System view displays the device's IP address
-- [ ] **SYSTEM-03**: The System view displays WiFi signal strength (dBm or bars)
-- [ ] **SYSTEM-04**: The System view remains functional when WiFi is disconnected — it shows the disconnected state clearly
+- [x] **SYSTEM-01**: The System view displays the connected WiFi SSID
+- [x] **SYSTEM-02**: The System view displays the device's IP address (interpreted as WAN IP per Phase 4 D-43-bis, sourced from ip-api's `query` field)
+- [x] **SYSTEM-03**: The System view displays WiFi signal strength (drawn bars per Phase 4 D-42)
+- [x] **SYSTEM-04**: The System view remains functional when WiFi is disconnected — uniform `--` state per Phase 4 D-44
 
 ## v2 Requirements
 
@@ -103,10 +103,10 @@
 | CLOCK-03 | Phase 3 | Complete |
 | CLOCK-04 | Phase 3 | Complete |
 | CLOCK-05 | Phase 3 | Complete |
-| SYSTEM-01 | Phase 4 | Pending |
-| SYSTEM-02 | Phase 4 | Pending |
-| SYSTEM-03 | Phase 4 | Pending |
-| SYSTEM-04 | Phase 4 | Pending |
+| SYSTEM-01 | Phase 4 | Complete |
+| SYSTEM-02 | Phase 4 | Complete |
+| SYSTEM-03 | Phase 4 | Complete |
+| SYSTEM-04 | Phase 4 | Complete |
 
 **Coverage:**
 
