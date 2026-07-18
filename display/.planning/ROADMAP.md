@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Carousel + Weather** - Two-button carousel navigation and complete Weather view (completed 2026-07-17)
 - [x] **Phase 2.1: Fetch Retry** (INSERTED) - Retry every 60s on fetch failure until first success, then revert to 600s (completed 2026-07-18)
 - [x] **Phase 3: Clock View** - NTP-synced clock with auto-derived timezone offset and per-minute display updates (completed 2026-07-18)
-- [ ] **Phase 4: System View** - WiFi diagnostics view completing the v1 carousel
+- [ ] **Phase 4: System View** - WiFi diagnostics (SSID + WAN IP + signal bars) completing the v1 carousel
 
 ## Phase Details
 
@@ -132,11 +132,16 @@ Plans:
 **Requirements**: SYSTEM-01, SYSTEM-02, SYSTEM-03, SYSTEM-04
 **Success Criteria** (what must be TRUE):
 
-  1. Navigating to the System view shows the connected SSID, the device IP address, and WiFi signal strength (dBm or bar representation)
-  2. When WiFi is disconnected, the System view shows a clear "disconnected" state for each field rather than blank or stale values
-  3. The System view refreshes its data each time it is navigated to
+  1. Navigating to the System view shows the connected SSID, the device WAN IP address (public/internet-facing, not local — per phase-4 D-43-bis clarification), and WiFi signal strength (drawn bars per D-42)
+  2. When WiFi is disconnected, the System view shows a clear "disconnected" state — uniform `--` for all three fields
+  3. The System view refreshes its data each time it is navigated to (view-switch-only, no periodic polling per D-41)
 
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+**Wave 1**
+
+- [ ] 04-01-PLAN.md — Extend weather.py to 5-tuple with wan_ip (piggyback ip-api's `query` field via `?fields=...,query`). Forward from weather_view.refresh to system_view.set_wan_ip. Replace system_view.py stub with full render: SSID / WAN IP / drawn signal bars; uniform `--` when offline. Zero changes to main.py. SYSTEM-01..04.
+
 **UI hint**: yes
 
 ## Progress
@@ -150,4 +155,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 2. Carousel + Weather | 3/3 | Complete    | 2026-07-17 |
 | 2.1. Fetch Retry (INSERTED) | 1/1 | Complete    | 2026-07-18 |
 | 3. Clock View | 2/2 | Complete    | 2026-07-18 |
-| 4. System View | 0/TBD | Not started | - |
+| 4. System View | 0/1 | Planned | - |

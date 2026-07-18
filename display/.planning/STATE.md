@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 4 context gathered (5 decisions D-41..D-45 + WAN IP clarification); ready to plan
-last_updated: "2026-07-18T19:00:00.000Z"
+stopped_at: Phase 4 planned (1 plan, 1 wave); ready to execute — last v1 phase
+last_updated: "2026-07-18T19:15:00.000Z"
 last_activity: 2026-07-18
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 9
+  total_plans: 10
   completed_plans: 9
-  percent: 73
+  percent: 66
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-15)
 
 **Core value:** Pressing a button changes the view instantly and reliably; each view stays accurate on its own refresh cadence without user intervention.
-**Current focus:** Phase 4 (System View) — CONTEXT.md written (2026-07-18); ready to plan. Last v1 phase.
+**Current focus:** Phase 4 (System View) planned — ready to execute. Last v1 phase.
 
 ## Current Position
 
-Phase: 4 of 5 (System View) — CONTEXT.md complete; no plans yet
-Plan: — (needs `/gsd:plan-phase 4` to create the plan)
-Status: Ready to plan
+Phase: 4 of 5 (System View) — 1 plan in 1 wave (04-01-PLAN.md); CONTEXT + PLAN complete
+Plan: 0/1 executed (Wave 1 = 04-01)
+Status: Ready to execute
 Last activity: 2026-07-18
 
 Progress: [░░░░░░░░░░] 0%
@@ -110,6 +110,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-18T19:00:00Z
-Stopped at: Phase 4 context gathered — 6 decisions locked (D-41..D-45 + D-43-bis WAN IP clarification) across 5 gray areas. Ready for /gsd:plan-phase 4.
-Resume file: .planning/phases/04-system-view/04-CONTEXT.md
+Last session: 2026-07-18T19:15:00Z
+Stopped at: Phase 4 planned — 1 plan, 1 wave (04-01-PLAN.md, 5 tasks: 3 auto + 1 verify-only + 1 blocking human-verify). Ready for /gsd:execute-phase 4.
+Resume file: .planning/phases/04-system-view/04-01-PLAN.md
