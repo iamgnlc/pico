@@ -3,7 +3,11 @@ import urequests
 
 def current():
     try:
-        r = urequests.get("http://ip-api.com/json/")
+        # ip-api's default response omits `offset`; request it explicitly along
+        # with lat/lon. Without ?fields=..., loc.get("offset") returns None and
+        # clock_view.set_tz_offset(None) no-ops — the persistence file never
+        # gets written and the Clock view stays stuck at "--:--".
+        r = urequests.get("http://ip-api.com/json/?fields=lat,lon,offset")
         loc = r.json()
         r.close()
         offset = loc.get("offset")
