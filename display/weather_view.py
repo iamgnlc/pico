@@ -15,27 +15,12 @@ _cache_status = "pending"
 _REFRESH_MS = 600_000   # WEATHER-03 cadence (matches REFRESH_SECONDS = 600)
 _RETRY_MS = 60_000      # WEATHER-09 fast-retry cadence when _cache_status != "ok"
 _last_refresh_ms = 0
-_spinner_frame = 0
 
 
 def _center_text(oled, s, x_center, y_center, scale=1):
     w = 8 * len(s) * scale
     h = 8 * scale
     text_render.text(oled, s, x_center - w // 2, y_center - h // 2, scale)
-
-
-def _draw_spinner(oled):
-    # Small hollow ring near the temperature anchor with a rotating single-pixel
-    # indicator. Ring center (88, 20). 4-frame rotation via _spinner_frame % 4.
-    # Note: this draws over the "connecting..." text region briefly during fetch —
-    # planner-permitted interpretation of D-23. If visual overlap looks bad on-device,
-    # move the ring center to (108, 20).
-    global _spinner_frame
-    oled.ellipse(88, 20, 4, 4, 1, False)
-    offsets = ((0, -4), (4, 0), (0, 4), (-4, 0))
-    dx, dy = offsets[_spinner_frame % 4]
-    oled.pixel(88 + dx, 20 + dy, 1)
-    _spinner_frame += 1
 
 
 def should_refresh(now_ms):
@@ -78,18 +63,6 @@ def refresh(oled):
         _cache_status = "no_wifi"
         render(oled)
         return
-
-    # Draw a spinner frame BEFORE the blocking urequests.get() so the user sees
-    # fetch progress — but ONLY when we already have weather data to update
-    # (cache is "ok"). During the initial boot fetch, cache_status is "pending"
-    # and the panel is showing "connecting..." — overlaying a spinner there is
-    # visual noise the operator explicitly opted out of. D-23's "at least one
-    # frame during the fetch phase" is preserved for the 600s background refresh
-    # path, which is where spinner-as-activity-indicator carries useful signal.
-    if _cache_status == "ok":
-        render(oled)
-        _draw_spinner(oled)
-        oled.show()
 
     temp, code, is_day, tz_offset = weather.current()
     if temp is None:

@@ -9,7 +9,7 @@ _last_render_min = -1
 _last_sync_ms = 0
 _cached_tz_offset = None
 
-_SYNC_MS = 3_600_000   # 1h re-sync cadence after first success (CLOCK-04, D-35)
+_SYNC_MS = 21_600_000  # 6h re-sync cadence after first success (CLOCK-04, D-35 updated 2026-07-18)
 _RETRY_MS = 60_000     # 60s retry cadence until first success (D-36)
 _TZ_OFFSET_FILE = "tz_offset.txt"
 
