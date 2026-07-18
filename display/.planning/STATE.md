@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 2.1 planned (2 plans in 2 waves, plan-check PASSED)
-last_updated: "2026-07-17T22:40:00.000Z"
-last_activity: 2026-07-17
+stopped_at: Phase 2.1 narrowed to retry-only after Plan 02.1-01 revert (b8823ab); 1 plan ready to execute
+last_updated: "2026-07-18T16:00:00.000Z"
+last_activity: 2026-07-18
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 8
+  total_plans: 7
   completed_plans: 6
-  percent: 40
+  percent: 46
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-15)
 
 **Core value:** Pressing a button changes the view instantly and reliably; each view stays accurate on its own refresh cadence without user intervention.
-**Current focus:** Phase 2 Complete — Phase 2.1 (INSERTED, WEATHER-08/09) is next; Phase 3 after
+**Current focus:** Phase 2 Complete — Phase 2.1 (INSERTED, WEATHER-09) is next; Phase 3 after
 
 ## Current Position
 
-Phase: 2.1 of 5 (INSERTED — location label + fetch retry)
-Plan: 0/2 executed (Wave 1 = 02.1-01, Wave 2 = 02.1-02) — plan-check PASSED
+Phase: 2.1 of 5 (INSERTED — fetch retry)
+Plan: 0/1 executed (Wave 1 = 02.1-02) — plan-check PASSED
 Status: Ready to execute
-Last activity: 2026-07-17
+Last activity: 2026-07-18
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -70,10 +70,8 @@ Recent decisions affecting current work:
 - Phase 2 (D-22): On-view-switch = redraw cached data instantly; 600s cadence in the scheduler
 - Phase 2 (D-23): Boot sequence = "connecting..." static during wifi.connect(), then spinner during weather fetch
 - Phase 2 (D-24): Clock and System stubs render fully blank in Phase 2 — page dots only
-- Phase 2.1 (D-26): Location above temp; temp pushed down; combined block vertically balanced with icon (ref coords loc(88,18) temp(88,36) ring cy=30)
-- Phase 2.1 (D-27/28): Location scale=1, truncate-no-ellipsis; city → regionName → countryCode fallback cascade
-- Phase 2.1 (D-29/30): `weather.current()` extended to 4-tuple `(temp, code, is_day, location)`; location fetched every refresh alongside weather
 - Phase 2.1 (D-31/32/33): should_refresh reads _cache_status inline; 60s if not "ok", 600s if "ok"; boot-fetch failure = immediate 60s retry mode; stamp-at-start unchanged
+- Phase 2.1 (2026-07-18): WEATHER-08 (location label) dropped after Plan 02.1-01 layout regression → revert `b8823ab`. D-26..D-30 retired; Phase 2.1 narrowed to retry-only
 
 ### Pending Todos
 
@@ -90,8 +88,14 @@ None yet.
 |----------|------|--------|-------------|
 | *(none)* | | | |
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260718-scope-cleanup-phase-2.1 | Narrow Phase 2.1 scope to retry-only after Plan 02.1-01 revert | 2026-07-18 | — | [260718-scope-cleanup-phase-2.1](./quick/260718-scope-cleanup-phase-2.1/) |
+
 ## Session Continuity
 
-Last session: 2026-07-17T21:40:00Z
-Stopped at: Phase 2 planned — 3 plans in 3 waves, plan-check PASSED
-Resume file: .planning/phases/02-carousel-+-weather/02-01-PLAN.md (execute next)
+Last session: 2026-07-18T16:00:00Z
+Stopped at: Phase 2.1 narrowed to retry-only after Plan 02.1-01 revert
+Resume file: .planning/phases/02.1-location-label-+-fetch-retry/02.1-02-PLAN.md (execute next)
