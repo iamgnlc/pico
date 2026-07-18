@@ -27,7 +27,7 @@
 - [ ] **WEATHER-03**: The Weather view auto-refreshes every 600 seconds
 - [ ] **WEATHER-04**: The Weather view refreshes immediately when navigated to (in addition to the periodic cadence)
 - [ ] **WEATHER-05**: The Weather view shows a clear error state ("no wifi" / "no data") when the fetch fails, without crashing or blocking the carousel
-- [ ] **WEATHER-09**: When a weather fetch fails, the device retries every 60 seconds until the first successful fetch, then reverts to the 600-second default cadence
+- [x] **WEATHER-09**: When a weather fetch fails, the device retries every 60 seconds until the first successful fetch, then reverts to the 600-second default cadence
 
 ### Clock View
 
@@ -97,7 +97,7 @@
 | WEATHER-03 | Phase 2 | Complete |
 | WEATHER-04 | Phase 2 | Complete |
 | WEATHER-05 | Phase 2 | Complete |
-| WEATHER-09 | Phase 2.1 | Pending |
+| WEATHER-09 | Phase 2.1 | Complete |
 | CLOCK-01 | Phase 3 | Pending |
 | CLOCK-02 | Phase 3 | Pending |
 | CLOCK-03 | Phase 3 | Pending |

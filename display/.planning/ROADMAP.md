@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Secure Foundation** - Rotate exposed credentials, move to secrets.py, fix degree symbol (completed 2026-07-15)
 - [x] **Phase 2: Carousel + Weather** - Two-button carousel navigation and complete Weather view (completed 2026-07-17)
-- [ ] **Phase 2.1: Fetch Retry** (INSERTED) - Retry every 60s on fetch failure until first success, then revert to 600s
+- [x] **Phase 2.1: Fetch Retry** (INSERTED) - Retry every 60s on fetch failure until first success, then revert to 600s (completed 2026-07-18)
 - [ ] **Phase 3: Clock View** - NTP-synced clock with timezone offset and per-second updates
 - [ ] **Phase 4: System View** - WiFi diagnostics view completing the v1 carousel
 
@@ -94,7 +94,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 02.1-02-PLAN.md — Add _RETRY_MS = 60_000 and cadence-aware should_refresh predicate (600s when _cache_status == "ok", else 60s). WEATHER-09.
+- [x] 02.1-02-PLAN.md — Add _RETRY_MS = 60_000 and cadence-aware should_refresh predicate (600s when _cache_status == "ok", else 60s). WEATHER-09.
 
 **Note**: The original Wave 1 plan (`02.1-01-PLAN.md` — location label) was reverted in commit `b8823ab` after a layout regression; WEATHER-08 was dropped and Phase 2.1 was narrowed to retry-only. The `02.1-02` filename is retained (not renumbered) so git history for the plan-check work stays linkable.
 
@@ -139,6 +139,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Secure Foundation | 3/3 | Complete    | 2026-07-15 |
 | 2. Carousel + Weather | 3/3 | Complete    | 2026-07-17 |
-| 2.1. Fetch Retry (INSERTED) | 0/1 | Not started | - |
+| 2.1. Fetch Retry (INSERTED) | 1/1 | Complete    | 2026-07-18 |
 | 3. Clock View | 0/TBD | Not started | - |
 | 4. System View | 0/TBD | Not started | - |
