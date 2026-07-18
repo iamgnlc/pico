@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Secure Foundation** - Rotate exposed credentials, move to secrets.py, fix degree symbol (completed 2026-07-15)
 - [x] **Phase 2: Carousel + Weather** - Two-button carousel navigation and complete Weather view (completed 2026-07-17)
-- [ ] **Phase 2.1: Location Label + Fetch Retry** (INSERTED) - Show location name on Weather view; retry every 60s on fetch failure
+- [ ] **Phase 2.1: Fetch Retry** (INSERTED) - Retry every 60s on fetch failure until first success, then revert to 600s
 - [ ] **Phase 3: Clock View** - NTP-synced clock with timezone offset and per-second updates
 - [ ] **Phase 4: System View** - WiFi diagnostics view completing the v1 carousel
 
@@ -78,30 +78,27 @@ Plans:
 
 **UI hint**: yes
 
-### Phase 2.1: Location Label + Fetch Retry (INSERTED)
+### Phase 2.1: Fetch Retry (INSERTED)
 
-**Goal**: The Weather view shows the current location name alongside the icon and temperature, and the device recovers from fetch failures on a 60-second cadence until the first success
+**Goal**: The device recovers from fetch failures on a 60-second cadence until the first success, then reverts to the 600-second default cadence
 **Mode:** mvp
 **Depends on**: Phase 2
-**Requirements**: WEATHER-08, WEATHER-09
+**Requirements**: WEATHER-09
 **Success Criteria** (what must be TRUE):
 
-  1. The Weather view shows a location name (city or region from ip-api geolocation) visible in the content area alongside the condition icon and temperature
-  2. When a boot-time or scheduled weather fetch fails ("no wifi" or "no data"), the next refresh attempt fires ~60 s later — not the default 600 s
-  3. As soon as one fetch succeeds after a failure run, the next refresh reverts to the 600-second default cadence (does NOT stay stuck at 60 s)
-  4. The 60-second retry window does not miss button presses (poll loop remains responsive; presses queue via IRQ and dispatch after refresh returns)
+  1. When a boot-time or scheduled weather fetch fails ("no wifi" or "no data"), the next refresh attempt fires ~60 s later — not the default 600 s
+  2. As soon as one fetch succeeds after a failure run, the next refresh reverts to the 600-second default cadence (does NOT stay stuck at 60 s)
+  3. The 60-second retry window does not miss button presses (poll loop remains responsive; presses queue via IRQ and dispatch after refresh returns)
 
-**Plans:** 2 plans
+**Plans:** 1 plan
 Plans:
 **Wave 1**
 
-- [ ] 02.1-01-PLAN.md — Extend weather.current() to 4-tuple (temp, code, is_day, location); wire _cached_location + relayout render() with location label at (88, 18), temp at (88, 36), ring cy=30. WEATHER-08.
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
 - [ ] 02.1-02-PLAN.md — Add _RETRY_MS = 60_000 and cadence-aware should_refresh predicate (600s when _cache_status == "ok", else 60s). WEATHER-09.
 
-**UI hint**: yes
+**Note**: The original Wave 1 plan (`02.1-01-PLAN.md` — location label) was reverted in commit `b8823ab` after a layout regression; WEATHER-08 was dropped and Phase 2.1 was narrowed to retry-only. The `02.1-02` filename is retained (not renumbered) so git history for the plan-check work stays linkable.
+
+**UI hint**: no
 
 ### Phase 3: Clock View
 
@@ -142,6 +139,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Secure Foundation | 3/3 | Complete    | 2026-07-15 |
 | 2. Carousel + Weather | 3/3 | Complete    | 2026-07-17 |
-| 2.1. Location Label + Fetch Retry (INSERTED) | 0/2 | Not started | - |
+| 2.1. Fetch Retry (INSERTED) | 0/1 | Not started | - |
 | 3. Clock View | 0/TBD | Not started | - |
 | 4. System View | 0/TBD | Not started | - |
