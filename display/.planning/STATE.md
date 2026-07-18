@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-15)
 
 **Core value:** Pressing a button changes the view instantly and reliably; each view stays accurate on its own refresh cadence without user intervention.
-**Current focus:** Phase 3 complete — Phase 4 (System View) is next. Phase 4 has no CONTEXT.md yet — needs discuss-phase before planning.
+**Current focus:** Phase 4 (System View) — CONTEXT.md written (2026-07-18); ready to plan. Last v1 phase.
 
 ## Current Position
 
-Phase: 4 of 5 (System View) — not yet started
-Plan: — (Phase 4 has no plans yet)
-Status: Ready to discuss next phase
+Phase: 4 of 5 (System View) — CONTEXT.md complete; no plans yet
+Plan: — (needs `/gsd:plan-phase 4` to create the plan)
+Status: Ready to plan
 Last activity: 2026-07-18
 
 Progress: [░░░░░░░░░░] 0%
