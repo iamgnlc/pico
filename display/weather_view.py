@@ -2,6 +2,7 @@ from sh1107 import WIDTH, HEIGHT
 import wifi
 import weather
 import clock_view
+import system_view
 import icons
 import text_render
 import time
@@ -64,7 +65,7 @@ def refresh(oled):
         render(oled)
         return
 
-    temp, code, is_day, tz_offset = weather.current()
+    temp, code, is_day, tz_offset, wan_ip = weather.current()
     if temp is None:
         _cache_status = "no_data"
         render(oled)
@@ -75,4 +76,5 @@ def refresh(oled):
     _cached_is_day = is_day
     _cache_status = "ok"
     clock_view.set_tz_offset(tz_offset)
+    system_view.set_wan_ip(wan_ip)
     render(oled)
