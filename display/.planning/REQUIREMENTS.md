@@ -32,7 +32,7 @@
 ### Clock View
 
 - [ ] **CLOCK-01**: The Clock view shows the current time synced via NTP over WiFi
-- [ ] **CLOCK-02**: The clock applies a single hardcoded timezone offset (configured at the top of `main.py`)
+- [ ] **CLOCK-02**: The clock applies a timezone offset derived automatically from ip-api geolocation (piggybacked on the existing weather fetch); the offset is persisted to `tz_offset.txt` on the Pico's flash and loaded at module import so subsequent boots have the offset before the first weather fetch completes
 - [ ] **CLOCK-03**: The Clock view updates every second while displayed
 - [ ] **CLOCK-04**: The Clock view re-syncs NTP on a reasonable cadence (once at boot + periodically)
 - [ ] **CLOCK-05**: The Clock view shows a clear error state when NTP has never succeeded (e.g. `--:--`)
@@ -116,4 +116,4 @@
 
 ---
 *Requirements defined: 2026-07-15*
-*Last updated: 2026-07-18 — WEATHER-08 (location label) dropped after Plan 02.1-01 revert (layout regression); Phase 2.1 narrowed to WEATHER-09 (60s fast-retry) only*
+*Last updated: 2026-07-18 — CLOCK-02 redirected from "hardcoded TZ_OFFSET in main.py" to "auto-derived from ip-api + persisted on device" after Plan 03-01 human-verify surfaced the manual-config brittleness (Plan 03-02 delivers the redirect); WEATHER-08 (location label) dropped earlier the same day after Plan 02.1-01 revert; Phase 2.1 remains narrowed to WEATHER-09 only*

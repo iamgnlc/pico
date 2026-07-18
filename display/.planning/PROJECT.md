@@ -31,7 +31,7 @@ Pressing a button changes the view instantly and reliably; each view stays accur
 - [ ] Boot to Weather view by default (no persistence across reboots)
 - [ ] Page-dot indicator showing current position in the carousel
 - [ ] Weather view renders temperature with a degree symbol (e.g. `19°`) instead of `19C`
-- [ ] Clock view synchronized via NTP over WiFi with a single hardcoded timezone offset
+- [ ] Clock view synchronized via NTP over WiFi with a timezone offset auto-derived from ip-api geolocation (piggybacked on the weather fetch) and persisted across reboots in `tz_offset.txt`
 - [ ] System view displays SSID, IP address, and WiFi signal strength
 - [ ] Per-view refresh policy: Weather every 600s + on view-switch; Clock every 1s; System on view-switch
 - [ ] Graceful WiFi-failure behavior: affected views show a clear error state; background reconnect
@@ -80,7 +80,7 @@ Pressing a button changes the view instantly and reliably; each view stays accur
 | WiFi-required views show error, background reconnect | Keeps device usable in offline moments; System view acts as diagnostic | — Pending |
 | Move WiFi creds to gitignored `secrets.py` | Current creds are committed to git; needs remediation before further work | — Pending |
 | Keep 600s weather refresh | Existing setting is already appropriate for API churn / weather change rate | — Pending |
-| Single hardcoded timezone offset | v1 device runs in one location; DST edge cases deliberately deferred | — Pending |
+| TZ offset auto-derived from ip-api + persisted on device | Removes the "user must edit config for every location and DST transition" chore; ip-api's `offset` field is DST-aware; persistence means correct time appears immediately after NTP sync on subsequent boots (no need to wait for a weather fetch first) | — Pending |
 | Render `°` via custom draw (not font swap) | Default 8×8 framebuf font lacks the glyph; a small circle is cheaper than shipping a new font | — Pending |
 
 ## Evolution

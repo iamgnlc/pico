@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 3 code-complete (Plan 03-01 shipped, 3b506a0); awaiting end-of-phase human-verify batch
-last_updated: "2026-07-18T17:15:00.000Z"
+stopped_at: Phase 3 gap-closure Plan 03-02 code-complete (TZ auto-derive + persist, 44f5d4a); awaiting end-of-phase human-verify batch (Plans 03-01 + 03-02 combined)
+last_updated: "2026-07-18T17:45:00.000Z"
 last_activity: 2026-07-18
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 8
-  completed_plans: 8
-  percent: 62
+  total_plans: 9
+  completed_plans: 9
+  percent: 66
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-15)
 
 **Core value:** Pressing a button changes the view instantly and reliably; each view stays accurate on its own refresh cadence without user intervention.
-**Current focus:** Phase 3 code-complete — awaiting human-verify batch; Phase 4 (System View) after.
+**Current focus:** Phase 3 (with 03-02 gap closure) code-complete — awaiting human-verify batch; Phase 4 (System View) after.
 
 ## Current Position
 
 Phase: 3 of 5 (Clock View)
-Plan: 1/1 code-verified (03-01, commit 3b506a0) — human-verify deferred
-Status: Awaiting on-device human-verify batch (6 scenarios)
+Plan: 2/2 code-verified (03-01 commit 3b506a0; 03-02 gap-closure commit 44f5d4a for CLOCK-02 redirect)
+Status: Awaiting on-device human-verify batch — 03-02's 6 scenarios (supersedes 03-01's TZ_OFFSET behavior)
 Last activity: 2026-07-18
 
 Progress: [░░░░░░░░░░] 0%
@@ -77,6 +77,7 @@ Recent decisions affecting current work:
 - Phase 3 (D-38): `clock_view.should_tick(now_ms)` + `should_sync(now_ms)` + `sync(oled)` — pure predicates; `main.py` gates re-render with `_current_idx == 1`
 - Phase 3 (D-39): `HH:MM` scale 3 centered at (64, 27); no TZ label / date / sync indicator (all deferred to v2)
 - Phase 3 (D-40): Single boolean `_synced` state; no enum
+- Phase 3 (2026-07-18, Plan 03-02): CLOCK-02 redirected from "hardcoded `TZ_OFFSET` in main.py" to "auto-derived from ip-api's `offset` field on each weather fetch, persisted to `tz_offset.txt` with flash-wear guard, loaded at module import so subsequent boots show correct time as soon as NTP syncs". Clock renders `HH:MM` iff both `_synced` and `_cached_tz_offset is not None`. T-03-01-07 (circular import) retired.
 
 ### Pending Todos
 
@@ -101,6 +102,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-18T17:15:00Z
-Stopped at: Phase 3 Plan 03-01 code-complete and committed (3b506a0); on-device human-verify batch (6 scenarios) is the only remaining gate. Standing check: valid TZ_OFFSET set in main.py before copying.
-Resume file: .planning/phases/03-clock-view/03-01-SUMMARY.md § "Deferred to End-of-Phase Batch" for verify steps
+Last session: 2026-07-18T17:45:00Z
+Stopped at: Phase 3 (03-01 + 03-02) code-complete and committed. Awaiting on-device human-verify — 03-02's 6-scenario batch supersedes 03-01's (TZ config no longer manual). No standing pre-verify config check required (offset is auto-derived from ip-api).
+Resume file: .planning/phases/03-clock-view/03-02-SUMMARY.md § "Deferred to End-of-Phase Batch" for verify steps
