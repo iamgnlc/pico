@@ -27,7 +27,6 @@
 - [ ] **WEATHER-03**: The Weather view auto-refreshes every 600 seconds
 - [ ] **WEATHER-04**: The Weather view refreshes immediately when navigated to (in addition to the periodic cadence)
 - [ ] **WEATHER-05**: The Weather view shows a clear error state ("no wifi" / "no data") when the fetch fails, without crashing or blocking the carousel
-- [ ] **WEATHER-08**: The Weather view displays the current location name (city/region from ip-api geolocation) alongside the icon and temperature
 - [ ] **WEATHER-09**: When a weather fetch fails, the device retries every 60 seconds until the first successful fetch, then reverts to the 600-second default cadence
 
 ### Clock View
@@ -98,7 +97,6 @@
 | WEATHER-03 | Phase 2 | Complete |
 | WEATHER-04 | Phase 2 | Complete |
 | WEATHER-05 | Phase 2 | Complete |
-| WEATHER-08 | Phase 2.1 | Pending |
 | WEATHER-09 | Phase 2.1 | Pending |
 | CLOCK-01 | Phase 3 | Pending |
 | CLOCK-02 | Phase 3 | Pending |
@@ -112,10 +110,10 @@
 
 **Coverage:**
 
-- v1 requirements: 25 total
-- Mapped to phases: 25
+- v1 requirements: 24 total
+- Mapped to phases: 24
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-07-15*
-*Last updated: 2026-07-17 — Phase 2 closed; added WEATHER-08 (location label) and WEATHER-09 (60s fast-retry on failure) mapped to inserted Phase 2.1*
+*Last updated: 2026-07-18 — WEATHER-08 (location label) dropped after Plan 02.1-01 revert (layout regression); Phase 2.1 narrowed to WEATHER-09 (60s fast-retry) only*
