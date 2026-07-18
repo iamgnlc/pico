@@ -1,126 +1,103 @@
 {
   "version": "1.0",
-  "timestamp": "2026-07-18T18:20:00Z",
+  "timestamp": "2026-07-18T20:30:00Z",
   "phase": null,
-  "phase_name": "between phases — Phase 3 just closed, Phase 4 not yet started",
+  "phase_name": "between milestones — v1.0 shipped and pushed, v2 not yet scoped",
   "phase_dir": null,
-  "status": "between_phases",
-  "position": "Phase 3 (Clock View) complete and closed at commit 1da3a5b. Phase 4 (System View) is next; no CONTEXT.md yet — starts with /gsd:discuss-phase 4.",
+  "status": "milestone_archived_and_pushed",
+  "position": "v1.0 milestone complete: archived to .planning/milestones/, tagged, and pushed to origin/main. 24 of 24 v1 requirements delivered. No active work; awaiting operator decision on v1.1 vs v2 scoping.",
   "completed_this_session": [
     {
-      "item": "Reverted Plan 02.1-01 (location label) via /gsd:undo after layout regression finding",
-      "commits": ["b8823ab revert(02.1-01): undo plan 02.1-01 — layout regression"]
+      "item": "Full v1.0 milestone delivered (5 phases, 10 plans, 24 requirements) — see prior HANDOFF.json entries for phase-by-phase detail",
+      "commits": "See tag v1.0 and git log a20bb0e..3eaa78c for the closure lineage"
     },
     {
-      "item": "Scope-cleanup quick task narrowed Phase 2.1 to retry-only (WEATHER-08 dropped)",
+      "item": "Cross-phase refactor: rename weather.py → bootstrap.py, absorb wifi.py into private helper, consolidate to 6-tuple bootstrap.fetch()",
       "commits": [
-        "05113c0 docs(quick-260718-scope-cleanup): drop WEATHER-08 from requirements",
-        "f4438db docs(quick-260718-scope-cleanup): narrow Phase 2.1 to retry-only",
-        "6f31909 docs(02.1): trim CONTEXT.md to retry-only after WEATHER-08 drop",
-        "d787dd4 docs(02.1-02): refresh plan interfaces after Plan 02.1-01 revert",
-        "22bc01a docs(quick-260718-scope-cleanup): update STATE + add PLAN and SUMMARY",
-        "d080627 docs(02.1): delete stale 02.1-01-PLAN.md after revert"
+        "bb2d763 refactor: rename weather.py → bootstrap.py; consolidate wifi.connect into fetch()",
+        "a20bb0e docs(quick-260718-rename-bootstrap): PROJECT + CLAUDE patches; PLAN + SUMMARY; STATE update"
       ]
     },
     {
-      "item": "Phase 2.1 execute + close — Plan 02.1-02 (WEATHER-09 60s retry)",
+      "item": "v1.0 milestone archive + tag",
       "commits": [
-        "5cd58b3 feat(02.1-02): add _RETRY_MS and cadence-aware should_refresh (WEATHER-09)",
-        "7d0fe83 docs(02.1-02): plan summary + STATE update — Phase 2.1 code-complete",
-        "ad459fd docs(02.1): mark Phase 2.1 (Fetch Retry) complete"
-      ]
+        "3eaa78c chore: archive v1.0 milestone"
+      ],
+      "tag": "v1.0 (annotated) at 3eaa78c"
     },
     {
-      "item": "Phase 3 discuss-phase — 7 decisions D-34..D-40 across 5 gray areas",
-      "commits": ["4efe73b docs(03): capture phase context"]
-    },
-    {
-      "item": "Phase 3 plan-phase — Plan 03-01 (initial)",
-      "commits": ["a422799 docs(03): phase plan — 1 plan, 1 wave (clock view)"]
-    },
-    {
-      "item": "Phase 3 execute Plan 03-01 (NTP clock with initially-hardcoded TZ_OFFSET)",
-      "commits": [
-        "3b506a0 feat(03-01): NTP-synced clock view (CLOCK-01..05)",
-        "6b47758 docs(03-01): plan summary + STATE update — Phase 3 code-complete"
-      ]
-    },
-    {
-      "item": "CLOCK-02 redirect via Plan 03-02 gap closure (mid-verify) — auto-derive TZ from ip-api + persist to tz_offset.txt",
-      "commits": [
-        "7e2ff9b docs(03-02): gap-closure plan — TZ from location, persisted",
-        "44f5d4a feat(03-02): auto-derive TZ offset from ip-api, persist on device (CLOCK-02)",
-        "1732659 docs(03-02): plan summary + REQUIREMENTS/PROJECT/STATE updates"
-      ]
-    },
-    {
-      "item": "Mid-verify bug fix: ip-api URL now explicitly requests offset field via ?fields=lat,lon,offset",
-      "commits": ["c23bb5a fix(03-02): request offset field explicitly from ip-api"]
-    },
-    {
-      "item": "Phase 3 closeout after on-device human-verify approved",
-      "commits": ["1da3a5b docs(03): mark Phase 3 (Clock View) complete"]
+      "item": "Pushed to origin",
+      "detail": "56 commits + v1.0 tag pushed to https://github.com/iamgnlc/pico (17f0c5d..3eaa78c on main)"
     }
   ],
   "requirements_delivered": [
-    "WEATHER-09 (60s fetch-retry — Phase 2.1 verified 2026-07-18)",
-    "CLOCK-01 through CLOCK-05 (Phase 3 verified 2026-07-18; CLOCK-02 redirected mid-phase to auto-derived+persisted)"
+    "All 24 v1 requirements: SEC-01/02/03, NAV-01..06, WEATHER-01..05, WEATHER-09, CLOCK-01..05, SYSTEM-01..04"
   ],
   "requirements_pending": [
-    "SYSTEM-01 through SYSTEM-04 (Phase 4 — the last v1 phase)"
+    "v2 candidates carried forward in milestones/v1.0-REQUIREMENTS.md § 'v2 Requirements': WEATHER-06 (multi-day/hourly forecast), WEATHER-07 (user-configurable location override), CLOCK-06 (user-configurable timezone with DST), CLOCK-07 (alarm/stopwatch), NAV-07 (long-press semantics), NAV-08 (last-view persistence across reboots).",
+    "Plus 11 UX ideas deferred from phase discussions (see milestones/v1.0-ROADMAP.md § 'Deferred UX Ideas')."
   ],
   "blockers": [],
   "human_actions_pending": [
     {
-      "action": "None immediate — Phase 3 is fully human-verified and closed. Phase 4 discussion is the next step.",
-      "context": "Phase 4 (System View) has no CONTEXT.md yet. Standard flow: /gsd:discuss-phase 4 to lock decisions, then /gsd:plan-phase 4, then /gsd:execute-phase 4.",
+      "action": "Decide on next milestone: v1.1 (small enhancements) vs v2 (larger scope like multi-day forecast or long-press UX)",
+      "context": "No milestone declared. Deferred v2 candidates in v1.0-REQUIREMENTS.md § v2 Requirements + 11 UX ideas in v1.0-ROADMAP.md § Deferred UX Ideas.",
       "blocking": false
     }
   ],
   "session_lessons": [
     {
-      "lesson": "ip-api's default JSON response OMITS fields like `offset`. Always request them explicitly via ?fields=... query param. The default response includes only: status, country, countryCode, region, regionName, city, zip, lat, lon, timezone, isp, org, as, query.",
+      "lesson": "Human-verify caught two design defects that automated verify could not: (1) Plan 02.1-01 layout regression (led to revert + WEATHER-08 drop); (2) Plan 03-01 manual TZ_OFFSET brittleness (led to Plan 03-02 gap-closure redirecting CLOCK-02). Both were resolved cleanly with tools built for the case (/gsd:undo, /gsd:quick, gap-closure plan-within-phase).",
       "severity": "advisory",
-      "evidence": "Plan 03-02 shipped assuming loc.get('offset') would return a value from the default response. On-device verify showed tz_offset.txt was never created and Clock stayed at --:-- indefinitely. Root cause: default response has no `offset` key, so loc.get returned None, set_tz_offset(None) no-op'd. Fix: change URL to http://ip-api.com/json/?fields=lat,lon,offset (commit c23bb5a)."
+      "evidence": "See .planning/quick/260718-scope-cleanup-phase-2.1/ and .planning/phases/03-clock-view/03-02-*.md."
     },
     {
-      "lesson": "For any 'symmetric with Phase X' pattern reuse, still trace all state transitions on-paper. The Plan 03-02 D-31 mirror was structurally correct but assumed offset was always available — which required the URL fix upstream. Symmetry doesn't guarantee upstream inputs match assumptions.",
+      "lesson": "ip-api's default JSON response OMITS extended fields like `offset` and `query`. Always request them explicitly via `?fields=`. Discovered mid-verify on Plan 03-02 (fix c23bb5a); caught proactively on Plan 04-01 by carrying the anti-pattern into the plan text.",
       "severity": "advisory",
-      "evidence": "Same commit c23bb5a — the plan's threat model was thorough but did not enumerate 'what if the field ip-api returns is None instead of an int'. Belt-and-suspenders None-guard in set_tz_offset saved from a crash but hid the bug for a full verify cycle."
+      "evidence": ".planning/.continue-here.md § Critical Anti-Patterns has this as a persistent entry; commit c23bb5a is the retroactive fix."
     },
     {
-      "lesson": "Human-verify caught a design defect (manual TZ_OFFSET was too brittle) that automated verification could not have. Even for MicroPython on-device projects with only automated verify at the Python-parse level, budget human-verify time for UX-shaped surprises.",
+      "lesson": "Symmetric pattern reuse (weather_view's cache-status inline read → clock_view's should_sync → system_view's dual-gate render) accelerated Phase 3 and Phase 4 planning substantially. Encapsulation of upstream fetches into a single bootstrap.fetch() at the end unified this. Consider making 'cache-status inline read + main.py-gated render' the standard template for any future view.",
       "severity": "advisory",
-      "evidence": "User feedback after Plan 03-01 human-verify: 'timezone is wrong. use location to get the right timezone'. Triggered Plan 03-02 gap-closure — 4 files + 3 doc files touched, 7-commit lineage."
+      "evidence": "Phase 2.1 D-31, Phase 3 D-38, Phase 4 D-41; all locked into bootstrap.py + weather_view/clock_view/system_view at v1 close."
+    },
+    {
+      "lesson": "Phase directory rename would have been cleaner (`02.1-location-label-+-fetch-retry` no longer describes the phase's actual scope), but was explicitly deferred to avoid breaking git blame/log. Same tension with `.planning/codebase/*.md` — deferred at v1 archive. General pattern: at each phase's discuss/execute, decide up-front whether to rename retroactively or preserve history.",
+      "severity": "advisory",
+      "evidence": "The scope-cleanup quick task explicitly preserved the phase directory name; the milestone archive notes the codebase/*.md as technical debt for v2 /gsd:map-codebase."
     }
   ],
   "notable_deviations": [
     {
-      "topic": "Phase 3 grew from 1 plan to 2 plans mid-flight",
-      "captured_in_discuss": "Phase 3 CONTEXT.md D-38 assumed hardcoded TZ_OFFSET model (matching CLOCK-02's original wording)",
-      "actual": "Plan 03-02 was added as a gap-closure Wave 2 after Plan 03-01 human-verify surfaced the design defect. CLOCK-02 was rewritten in REQUIREMENTS.md and PROJECT.md; ROADMAP.md gained a Wave 2. T-03-01-07 (circular import via `from main import TZ_OFFSET`) was retired because Plan 03-02 removed the config.",
-      "impact": "Phase 3 stayed on-track — 2 plans total, both landed same day. Requirement CLOCK-02 wording is now materially different from the initial ROADMAP/REQUIREMENTS text but is human-verify approved."
+      "topic": "Phase 3 shipped 1 plan then grew to 2 plans mid-flight",
+      "captured_in_discuss": "CONTEXT.md assumed hardcoded TZ_OFFSET (matching CLOCK-02's original wording)",
+      "actual": "Plan 03-02 gap-closure redirected CLOCK-02 to auto-derived + persisted. Handled cleanly with 2 waves in the same phase; CONTEXT.md D-35 was updated (not rewritten) via a cross-phase quick task 260718-remove-spinner-tune-cadence.",
+      "impact": "Phase stayed on-track. CLOCK-02 wording in REQUIREMENTS.md was rewritten to reflect the delivered form."
     },
     {
-      "topic": "Phase 2.1 shrank from 2 plans to 1 plan via revert + rename",
-      "captured_in_discuss": "Phase 2.1 CONTEXT.md D-26..D-30 covered location label; D-31..D-33 covered retry",
-      "actual": "Plan 02.1-01 (location) was reverted for layout regression. D-26..D-30 retired. Phase 2.1 renamed 'Location Label + Fetch Retry' → 'Fetch Retry'. WEATHER-08 dropped from v1 scope entirely.",
-      "impact": "Phase 2.1 now covers only WEATHER-09 (retry). REQUIREMENTS.md, ROADMAP.md, PROJECT.md, STATE.md, phase CONTEXT.md, and Plan 02.1-02 interfaces all reflect the narrowed scope."
+      "topic": "Post-verify refactor folded into v1.0 tag (option A) rather than tagged as v1.0.1",
+      "captured_in_discuss": "Packaging decision presented at end of quick task 260718-rename-bootstrap",
+      "actual": "Operator chose option A. The v1.0 tag therefore points at `a20bb0e` (includes refactor), not at `9cce78e` (Phase 4 closeout — pure verified-on-device state).",
+      "impact": "One tag instead of two. Operator re-verified the refactor on-device before archiving, so the v1.0 tag DOES point at a verified state — just not a bytewise-identical one to the original human-verify snapshot. Documented in milestones/v1.0-ROADMAP.md § Post-Verify Refactor Included."
     }
   ],
-  "next_action": "Run /gsd:discuss-phase 4 to gather context for the System View phase. SYSTEM-01..04 cover WiFi diagnostics: connected SSID, IP address, signal strength (dBm or bars), and offline-state clarity. Phase 4 is the last v1 phase.",
-  "context_notes": "Working tree is clean; 44 commits ahead of origin/main; no local WIP. All three completed phases (1, 2, 2.1, 3) have VERIFICATION.md files. Phase 4 discussion should reuse patterns from Phase 3's discuss-phase: single boolean state where possible (mirror _synced/_cached_tz_offset), pure predicates with main.py gating, D-33 stamp-at-start for any network calls. System view content stays in rows 0-53 per Phase 2 D-19. No secrets.py rotation is currently needed. The Python 3 ast.parse checks + grep-based verify assertions have been the workhorse for MicroPython automated verify — continue that pattern.",
+  "next_action": "Run /gsd:new-milestone when ready to scope v1.1 or v2. Alternative: /gsd:map-codebase to refresh .planning/codebase/*.md and CLAUDE.md before scoping (recommended given the bootstrap.py refactor left prose docs stale).",
+  "context_notes": "Working tree clean; branch synced with origin. All 4 completed phase directories have VERIFICATION.md files with PASSED verdicts. Three quick-task directories under .planning/quick/ document post-shipping cross-phase changes. Milestone archive in .planning/milestones/v1.0-{ROADMAP,REQUIREMENTS}.md is frozen. The device on the operator's desk is running bootstrap.py + weather_view.py + clock_view.py + system_view.py at the state of commit a20bb0e (per operator's re-verify confirmation). No open bugs, no pending human actions, no in-flight code.",
   "recent_commits_on_main": [
-    "1da3a5b docs(03): mark Phase 3 (Clock View) complete",
-    "c23bb5a fix(03-02): request offset field explicitly from ip-api",
-    "1732659 docs(03-02): plan summary + REQUIREMENTS/PROJECT/STATE updates",
-    "44f5d4a feat(03-02): auto-derive TZ offset from ip-api, persist on device (CLOCK-02)",
-    "7e2ff9b docs(03-02): gap-closure plan — TZ from location, persisted",
-    "6b47758 docs(03-01): plan summary + STATE update — Phase 3 code-complete",
-    "3b506a0 feat(03-01): NTP-synced clock view (CLOCK-01..05)",
-    "a422799 docs(03): phase plan — 1 plan, 1 wave (clock view)",
-    "4efe73b docs(03): capture phase context",
-    "ad459fd docs(02.1): mark Phase 2.1 (Fetch Retry) complete"
+    "3eaa78c chore: archive v1.0 milestone",
+    "a20bb0e docs(quick-260718-rename-bootstrap): PROJECT + CLAUDE patches; PLAN + SUMMARY; STATE update",
+    "bb2d763 refactor: rename weather.py → bootstrap.py; consolidate wifi.connect into fetch()",
+    "9cce78e docs(04): mark Phase 4 (System View) complete — v1 milestone closed",
+    "338a41b docs(04-01): plan summary + STATE update — Phase 4 code-complete",
+    "210f512 feat(04-01): system view — SSID + WAN IP + signal bars (SYSTEM-01..04)",
+    "94eb337 docs(04): phase plan — 1 plan, 1 wave (system view)",
+    "b650d96 docs(state): update Current focus + Position after Phase 4 discuss",
+    "fae8428 docs(04): capture phase context",
+    "6b47758 docs(03-01): plan summary + STATE update — Phase 3 code-complete"
   ],
+  "tags": [
+    {"name": "v1.0", "commit": "3eaa78c", "annotated": true, "pushed": true}
+  ],
+  "remote_status": "synced with origin/main; 0 commits ahead, 0 behind. v1.0 tag pushed.",
   "uncommitted_files": []
 }
