@@ -9,6 +9,7 @@ import time
 # ---- user config -----------------------------------------------------------
 REFRESH_SECONDS = 600      # Weather auto-refresh cadence (Plan 02-03 wires this in)
 ROTATE          = True     # True = flip display 180°
+TZ_OFFSET       = 0        # Local time offset from UTC in seconds (positive east)
 # ---------------------------------------------------------------------------
 
 # ---- private tunables ------------------------------------------------------
@@ -98,6 +99,10 @@ if __name__ == "__main__":
     _draw_page_dots(oled, _current_idx)
     oled.show()
 
+    # Best-effort boot NTP sync. Non-blocking failure — clock_view.render will
+    # show '--:--' if _synced stays False; the poll loop retries at _RETRY_MS.
+    clock_view.sync(oled)
+
     while True:
         now = time.ticks_ms()
         if _pending_dir != 0:
@@ -114,4 +119,10 @@ if __name__ == "__main__":
             VIEWS[_current_idx].render(oled)
             _draw_page_dots(oled, _current_idx)
             oled.show()
+        if _current_idx == 1 and clock_view.should_tick(now):
+            clock_view.render(oled)
+            _draw_page_dots(oled, _current_idx)
+            oled.show()
+        if clock_view.should_sync(now):
+            clock_view.sync(oled)
         time.sleep_ms(_POLL_MS)
