@@ -1,6 +1,5 @@
 from sh1107 import WIDTH, HEIGHT
-import wifi
-import weather
+import bootstrap
 import clock_view
 import system_view
 import icons
@@ -53,19 +52,11 @@ def refresh(oled):
     # a failed fetch still consumes one _REFRESH_MS window before the next try.
     _last_refresh_ms = time.ticks_ms()
 
-    # Lazy import: secrets.py absence is caught by main.py's fallback block,
-    # which halts before refresh() is ever called. Importing at module load
-    # would fire ImportError during `import weather_view` in main.py — before
-    # the fallback screen renders — and drop to REPL instead.
-    import secrets
-
-    ip = wifi.connect(secrets.WIFI_SSID, secrets.WIFI_PASSWORD)
+    ip, temp, code, is_day, tz_offset, wan_ip = bootstrap.fetch()
     if not ip:
         _cache_status = "no_wifi"
         render(oled)
         return
-
-    temp, code, is_day, tz_offset, wan_ip = weather.current()
     if temp is None:
         _cache_status = "no_data"
         render(oled)
