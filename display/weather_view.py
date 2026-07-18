@@ -1,6 +1,7 @@
 from sh1107 import WIDTH, HEIGHT
 import wifi
 import weather
+import clock_view
 import icons
 import text_render
 import time
@@ -90,7 +91,7 @@ def refresh(oled):
         _draw_spinner(oled)
         oled.show()
 
-    temp, code, is_day = weather.current()
+    temp, code, is_day, tz_offset = weather.current()
     if temp is None:
         _cache_status = "no_data"
         render(oled)
@@ -100,4 +101,5 @@ def refresh(oled):
     _cached_code = code
     _cached_is_day = is_day
     _cache_status = "ok"
+    clock_view.set_tz_offset(tz_offset)
     render(oled)

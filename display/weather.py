@@ -6,6 +6,7 @@ def current():
         r = urequests.get("http://ip-api.com/json/")
         loc = r.json()
         r.close()
+        offset = loc.get("offset")
         url = ("https://api.open-meteo.com/v1/forecast"
                "?latitude={}&longitude={}"
                "&current=temperature_2m,weather_code,is_day").format(
@@ -13,6 +14,6 @@ def current():
         r = urequests.get(url)
         cur = r.json()["current"]
         r.close()
-        return cur["temperature_2m"], cur["weather_code"], cur["is_day"]
+        return cur["temperature_2m"], cur["weather_code"], cur["is_day"], offset
     except Exception:
-        return None, None, None
+        return None, None, None, None

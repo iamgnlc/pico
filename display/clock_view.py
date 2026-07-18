@@ -7,9 +7,21 @@ from sh1107 import WIDTH
 _synced = False
 _last_render_min = -1
 _last_sync_ms = 0
+_cached_tz_offset = None
 
 _SYNC_MS = 3_600_000   # 1h re-sync cadence after first success (CLOCK-04, D-35)
 _RETRY_MS = 60_000     # 60s retry cadence until first success (D-36)
+_TZ_OFFSET_FILE = "tz_offset.txt"
+
+# Load persisted TZ offset at module import so subsequent boots have a good
+# offset before the first weather fetch of the new session completes.
+# Failure (missing, malformed) leaves _cached_tz_offset as None; the next
+# weather fetch's ip-api offset will populate + persist it.
+try:
+    with open(_TZ_OFFSET_FILE) as f:
+        _cached_tz_offset = int(f.read().strip())
+except Exception:
+    _cached_tz_offset = None
 
 
 def _center_text(oled, s, x_center, y_center, scale=1):
@@ -18,12 +30,30 @@ def _center_text(oled, s, x_center, y_center, scale=1):
     text_render.text(oled, s, x_center - w // 2, y_center - h // 2, scale)
 
 
+def set_tz_offset(offset):
+    # Public setter called by weather_view.refresh after each successful
+    # weather fetch. Flash-wear guard: only writes when the fetched offset
+    # differs from the cached value. Stationary device with no DST writes
+    # the file once ever (first fetch of first-ever boot).
+    global _cached_tz_offset
+    if offset is None:
+        return
+    if offset == _cached_tz_offset:
+        return
+    _cached_tz_offset = offset
+    try:
+        with open(_TZ_OFFSET_FILE, "w") as f:
+            f.write(str(offset))
+    except Exception:
+        pass
+
+
 def should_tick(now_ms):
-    # Lazy import — main.TZ_OFFSET is not defined at clock_view module-load time
-    # (main.py imports clock_view before assigning TZ_OFFSET). Re-importing per
-    # call is cheap and guaranteed available once the poll loop is running.
-    from main import TZ_OFFSET
-    return time.localtime(time.time() + TZ_OFFSET)[4] != _last_render_min
+    if _synced and _cached_tz_offset is not None:
+        return time.localtime(time.time() + _cached_tz_offset)[4] != _last_render_min
+    # Degraded state: repaint --:-- exactly once (sentinel _last_render_min == -1
+    # means "we already rendered --:--", so no repeat repaints).
+    return _last_render_min != -1
 
 
 def should_sync(now_ms):
@@ -45,10 +75,9 @@ def sync(oled):
 
 def render(oled):
     global _last_render_min
-    from main import TZ_OFFSET
     oled.fill(0)
-    if _synced:
-        t = time.localtime(time.time() + TZ_OFFSET)
+    if _synced and _cached_tz_offset is not None:
+        t = time.localtime(time.time() + _cached_tz_offset)
         s = "{:02d}:{:02d}".format(t[3], t[4])
         _last_render_min = t[4]
     else:

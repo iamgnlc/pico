@@ -9,7 +9,6 @@ import time
 # ---- user config -----------------------------------------------------------
 REFRESH_SECONDS = 600      # Weather auto-refresh cadence (Plan 02-03 wires this in)
 ROTATE          = True     # True = flip display 180°
-TZ_OFFSET       = 0        # Local time offset from UTC in seconds (positive east)
 # ---------------------------------------------------------------------------
 
 # ---- private tunables ------------------------------------------------------
