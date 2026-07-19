@@ -7,7 +7,7 @@ previous_milestone_tag: v1.0
 previous_milestone_archived_at: "2026-07-18T20:15:00.000Z"
 status: milestone_archived
 stopped_at: v1.0 archived and tagged (fold-into-v1.0 packaging). Ready for /gsd:new-milestone when the operator wants to scope v1.1 or v2.
-last_updated: "2026-07-19T11:00:00.000Z"
+last_updated: "2026-07-19T15:35:00.000Z"
 last_activity: 2026-07-19
 progress:
   total_phases: 0
@@ -114,9 +114,10 @@ None yet.
 | 260718-rename-bootstrap | Rename weather.py → bootstrap.py; absorb wifi.connect into a private helper; 6-tuple fetch() | 2026-07-18 | `bb2d763` | [260718-rename-bootstrap](./quick/260718-rename-bootstrap/) |
 | 260719-e5g | Move view modules (weather_view/clock_view/system_view) into `views/` package | 2026-07-19 | `dcb4470` | [260719-e5g-move-view-modules-to-views-subdirectory](./quick/260719-e5g-move-view-modules-to-views-subdirectory/) |
 | 260719-f0b | Decouple weather_view from sibling views; move cross-view setter dispatch to main._refresh_all | 2026-07-19 | `c78b12c` | [260719-f0b-decouple-weather-view-from-sibling-views](./quick/260719-f0b-decouple-weather-view-from-sibling-views/) |
+| 260719-n1b | BOOTSEL short-press hard reset polled inline in the scheduler tick (calls `machine.reset()`) | 2026-07-19 | `ca9d37f` | [260719-n1b-add-bootsel-short-press-hard-reset](./quick/260719-n1b-add-bootsel-short-press-hard-reset/) |
 
 ## Session Continuity
 
-Last session: 2026-07-19T11:00:00Z
-Stopped at: Completed quick task 260719-f0b — decoupled `views/weather_view.py` from sibling views by replacing `refresh(oled)` with a pure `set_data(ip, temp, code, is_day)` state-setter and moving the cross-view fan-out into `main._refresh_all(oled)` (composition root). `bootstrap.py` byte-identical. Operator to `mpremote cp -r views/ main.py ...` for on-device verification. Still between milestones — `/gsd:new-milestone` remains the natural next command.
+Last session: 2026-07-19T15:35:00Z
+Stopped at: Completed quick task 260719-n1b — added a BOOTSEL short-press hard reset. `main.py` now polls `rp2.bootsel_button()` as the first statement of each scheduler tick and calls `machine.reset()` on any detected press. Zero debounce, allocation-free, inherits `_POLL_MS = 100` cadence — respects D-13/14/15 (no asyncio, no `machine.Timer`, no dedicated IRQ). Operator to `mpremote cp main.py :` and press BOOTSEL on-device to smoke-test the reboot behaviour.
 Resume file: n/a — between milestones. `/gsd:new-milestone` is the natural next command.
