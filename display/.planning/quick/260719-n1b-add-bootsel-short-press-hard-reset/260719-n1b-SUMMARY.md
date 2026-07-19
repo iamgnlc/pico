@@ -1,11 +1,13 @@
 ---
 status: complete
 commit: ca9d37f
+followup_commit: b678517
 date: 2026-07-19
 phase: quick-260719-n1b
 plan: 01
 requirements: [QUICK-260719-n1b]
 files_modified: [main.py]
+on_device_verified: true
 ---
 
 # Quick Task 260719-n1b: BOOTSEL Short-Press Hard Reset — Summary
@@ -43,17 +45,38 @@ All six checks pass. Note on the diff-path check: the plan's literal-string comp
 
 None. Edit shape and locations match the plan and the orchestrator's `<atomic_edit_shape>` verbatim.
 
-## Post-Merge Manual Validation
+## On-Device Validation
 
-Operator will press the on-board BOOTSEL button on the running Pico W and confirm:
-- The device reboots within ~100 ms of the press.
-- It returns to the normal boot flow (boot render → `_refresh_all` → weather view).
-- KEY0/KEY1 (view carousel) still work after the reboot.
-- No IRQ contention or Pin config regression (BOOTSEL is not a GPIO pin and doesn't collide with `_KEY0_PIN=15` / `_KEY1_PIN=17`).
+Initial smoke test surfaced a boot-ROM mode-selection trap not caught by the automated gate:
 
-Not part of the automated gate; on-device only.
+**Symptom:** Pressing BOOTSEL blanked the OLED but the device never rebooted into `main.py`. A `RPI-RP2` USB drive appeared on the host laptop instead.
+
+**Root cause:** BOOTSEL is dual-purpose on RP2040 — readable at runtime via `rp2.bootsel_button()` (the runtime path we added), but ALSO checked by the Pico's boot ROM at reset time. When `machine.reset()` fired while the operator was still holding the button, the boot ROM saw BOOTSEL held and diverted into USB mass-storage mode instead of rebooting into MicroPython.
+
+**Fix (commit `b678517`):** Busy-wait for BOOTSEL release before calling `reset()`:
+
+```python
+        # BOOTSEL short-press = hard reset. Wait-for-release avoids the boot-ROM mass-storage trap.
+        if rp2.bootsel_button():
+            # BOOTSEL is also read by the boot ROM at reset time — if still held
+            # when reset() fires, the Pico enters USB mass-storage mode instead
+            # of rebooting into main.py. Wait for release before resetting.
+            while rp2.bootsel_button():
+                pass
+            reset()
+```
+
+The release-wait is NOT a debounce — the locked "any press = hard reset" semantics from the original plan still hold. It's strictly boot-ROM-mode avoidance.
+
+**Post-fix validation:** Operator re-flashed and confirmed the intended behaviour:
+- BOOTSEL press → OLED blanks briefly → Pico reboots → normal boot flow resumes (boot render → `_refresh_all` → weather view)
+- No `RPI-RP2` drive appears on the host
+- KEY0/KEY1 (view carousel) still work after the reboot
+- No regression in weather refresh / clock tick / system view rendering
 
 ## Self-Check: PASSED
 
 - Modified file exists: `display/main.py` — FOUND
-- Commit exists: `ca9d37f` — FOUND (`feat(260719-n1b): BOOTSEL short-press hard reset in scheduler tick`)
+- Original commit: `ca9d37f` (`feat(260719-n1b): BOOTSEL short-press hard reset in scheduler tick`)
+- Follow-up fix commit: `b678517` (`fix(bootsel): wait for BOOTSEL release before reset() to avoid boot-ROM mass-storage trap`)
+- On-device verified: yes (operator, 2026-07-19)
