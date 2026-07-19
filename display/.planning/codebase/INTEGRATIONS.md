@@ -1,112 +1,132 @@
 # External Integrations
 
-**Analysis Date:** 2026-07-15
+**Analysis Date:** 2026-07-19
 
 ## APIs & External Services
 
-**Weather & Geolocation:**
-- **IP Geolocation (ip-api.com)** - Locates device by public IP address
-  - Endpoint: `http://ip-api.com/json/`
-  - Client: `urequests` (MicroPython HTTP)
-  - Auth: None (free tier)
-  - Response fields used: `lat`, `lon` (`weather.py:6`)
+**Geolocation:**
+- `ip-api.com/json/` - IP-based geolocation to retrieve latitude, longitude, timezone offset, and public WAN IP
+  - SDK/Client: `urequests` (MicroPython HTTP library)
+  - Auth: None (anonymous, no API key required)
+  - Parameters: Explicit `?fields=lat,lon,offset,query` required in URL (`bootstrap.py:40`); default response omits `offset` and `query`
+  - Response: JSON object with keys `lat`, `lon`, `offset` (seconds from UTC), `query` (public IP address)
+  - Failure handling: Caught in `bootstrap.py:53` bare `except Exception` block; returns `(ip, None, None, None, None, None)` to allow caller to distinguish "WiFi ok but API failed" from "no WiFi"
 
-- **Open-Meteo API** - Open-source weather forecast service (no API key required)
-  - Endpoint: `https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,weather_code,is_day`
-  - Client: `urequests`
-  - Auth: None
-  - Response fields used: `current.temperature_2m`, `current.weather_code`, `current.is_day` (`weather.py:14`)
-  - Weather codes: Integer values mapped to WMO codes; icons map codes to visual conditions (rain/snow/thunder/fog/cloud/sun/moon) (`icons.py:1-14`)
+**Weather:**
+- `api.open-meteo.com/v1/forecast` - Weather forecast data (free, no auth)
+  - SDK/Client: `urequests` (MicroPython HTTP library)
+  - Auth: None (anonymous, no API key required)
+  - Parameters: `latitude`, `longitude` (from ip-api), `current=temperature_2m,weather_code,is_day` (`bootstrap.py:45-48`)
+  - Response: JSON with nested `current` object containing `temperature_2m` (°C), `weather_code` (WMO code), `is_day` (boolean)
+  - Failure handling: Caught in `bootstrap.py:53` bare `except Exception` block; returns partial tuple with temperature set to None
+  - WMO code mapping: `icons.py:1-14` maps weather codes to icon types (sun/moon/cloud/fog/thunder/snow/rain)
 
-**Error Handling:**
-All API calls wrapped in try/except; returns `(None, None, None)` on any failure (`weather.py:17-18`). Display shows "no data" fallback if weather unavailable (`main.py:29-30`).
+## Data Storage
+
+**Databases:**
+- None — no database backend
+
+**File Storage:**
+- Local filesystem only
+- `tz_offset.txt` - Single file cache for timezone offset (seconds from UTC); written after first successful ip-api fetch (`clock_view.py:33-48`)
+  - Flash wear protection: File only written when offset value changes from cached value (`clock_view.py:41-42`)
+  - Persistence: Loaded at module import time (`clock_view.py:20-24`); subsequent boots have good offset before first weather fetch completes
+
+**Caching:**
+- `weather_view.py:7-10` - Three module-level cache variables: `_cached_temp`, `_cached_code`, `_cached_is_day`, plus `_cache_status` flag (states: "pending", "ok", "no_wifi", "no_data")
+- `clock_view.py:7-10` - Clock sync state (`_synced` boolean) and cached timezone offset (`_cached_tz_offset`)
+- `system_view.py:6` - Cached WAN IP address (`_cached_wan_ip`)
+- Cache refresh: Driven by `main.py._refresh_all()` which calls `bootstrap.fetch()` once per refresh window, then distributes results to view setters
+
+## Authentication & Identity
+
+**Auth Provider:**
+- None — both external APIs are anonymous, no authentication required
+
+**WiFi Credentials:**
+- Source: `secrets.py` (user-created, gitignored file)
+- Fields: `WIFI_SSID`, `WIFI_PASSWORD`
+- Failure: If `secrets.py` missing, `main.py:37-46` catches `ImportError` and displays fallback screen ("missing secrets.py")
+
+## Monitoring & Observability
+
+**Error Tracking:**
+- None — no external error tracking service
+
+**Logs:**
+- None — no persistent logging
+- Debugging via `mpremote` or Thonny IDE console only
+- UI fallback states convey errors to user: "connecting...", "no wifi", "no data", "--:--" (clock unsync'd)
+
+## CI/CD & Deployment
+
+**Hosting:**
+- Raspberry Pi Pico W (standalone, no cloud hosting)
+
+**CI Pipeline:**
+- None — no CI/CD pipeline; MicroPython files copied directly to device via `mpremote cp` or Thonny
+
+**Deployment:**
+- Manual file copy to Pico filesystem: `mpremote cp sh1107.py main.py bootstrap.py icons.py text_render.py views/ :`
+- Auto-run on Pico power-up (MicroPython executes `main.py` automatically)
+
+## Environment Configuration
+
+**Required env vars:**
+- None — all configuration via `secrets.py` (credentials file) or `main.py` module constants
+- WiFi SSID/password: `secrets.py.WIFI_SSID`, `secrets.py.WIFI_PASSWORD`
+
+**Secrets location:**
+- `secrets.py` - User-created file in Pico root filesystem (`.gitignore`d)
+- Example template: `secrets.py.example` (may be committed to show structure)
+
+**Optional config:**
+- `REFRESH_SECONDS` (default 600) - Weather refresh interval in seconds (`main.py:9`)
+- `ROTATE` (default True) - Display 180° flip (`main.py:10`)
+- `_POLL_MS` (default 100) - Main loop tick interval in milliseconds (`main.py:14`)
+- `_DEBOUNCE_MS` (default 50) - Button debounce threshold in milliseconds (`main.py:15`)
+
+## Webhooks & Callbacks
+
+**Incoming:**
+- None — Pico W is not a server; no HTTP endpoints exposed
+
+**Outgoing:**
+- None — API calls are request-response only, no webhook callbacks registered
 
 ## Network & Connectivity
 
 **WiFi:**
-- **Network Standard:** 802.11 wireless (2.4 GHz band)
-- **SSID:** Hardcoded in `main.py:9` (REDACTED_SSID)
-- **Connection:** MicroPython `network.WLAN(network.STA_IF)` class (`wifi.py:6`)
-- **Auth:** WPA/WPA2 (password passed to `connect()`) (`wifi.py:5`)
-- **Timeout:** 20 seconds default; retries connection check every 1 second (`wifi.py:10-13`)
-- **DHCP:** Automatic; returns assigned IP via `ifconfig()[0]` (`wifi.py:14`)
+- Standard 2.4GHz WiFi (WPA2 assumed)
+- Timeout: 20 seconds for initial connection attempt (`bootstrap.py:11`)
+- Retry: After failed fetch, 60s retry cadence for weather/NTP (`weather_view.py:13`, `clock_view.py:13`)
+- Signal strength: Queried on-demand for system view display via `network.WLAN.status("rssi")` (`system_view.py:66`)
 
-**Fallback Behavior:**
-If WiFi connection fails or times out, display shows "no wifi" and skips weather fetch (`main.py:24-26`).
+**DNS/NTP:**
+- NTP pool assumed available on WiFi network (standard Pico W MicroPython setup)
+- `ntptime.settime()` called with 60s retry until success, then 6h re-sync (`clock_view.py:64-73`)
 
-## Hardware Peripherals
+## Rate Limiting & Throttling
 
-**SH1107 OLED Display:**
-- **Protocol:** SPI (not I2C)
-- **Resolution:** 128×64 pixels
-- **Connection:** Direct HAT to Pico W header (pinout fixed)
-- **Pinout:** 
-  - DC=GP8, CS=GP9, SCK=GP10, MOSI=GP11, RST=GP12
-  - SPI Bus 1
-  - Frequency: 20 MHz
-- **Control Flow:**
-  1. Initialize reset sequence (`sh1107.py:40-42`)
-  2. Send init command sequence (`sh1107.py:44-62`)
-  3. Framebuffer writes via `text()`, `fill()`, `pixel()`, `ellipse()`, `line()`, etc. (inherited from `framebuf.FrameBuffer`)
-  4. `show()` pushes buffer to panel via SPI with per-byte CS toggling (`sh1107.py:78-90`)
+**Not explicitly handled:**
+- `ip-api.com` - No rate-limiting detection; limit is ~45 requests per minute per IP (gracefully degraded if exceeded)
+- `api.open-meteo.com` - No rate-limiting detection; generous free tier (generous quota, unlikely to hit)
+- Implicit throttling: Fetch cadence 10 minutes normal, 60s on failure (`weather_view.py:12-13`)
 
-**Critical Quirks:**
-- CS must toggle around every data byte (not continuous burst) for correct GDDRAM latching (`sh1107.py:84-90`)
-- `0x21` addressing command is single-byte only; no argument byte follows (`sh1107.py:50`)
-- Rotation handled at pixel level in `show()`, not hardware-based, due to GDDRAM display-offset wrap (`sh1107.py:66-76`)
-- Buffer format must be `MONO_HMSB` (`sh1107.py:30`); `MONO_VLSB` scrambles pixel layout
+## Data Security
 
-**Pico W Onboard:**
-- Dual-core ARM Cortex-M0+ (RP2040)
-- WiFi: Broadcom CYW43439 (2.4 GHz 802.11 b/g/n)
-- RAM: 264 KB (sufficient for 1024-byte framebuffer + runtime)
+**HTTPS:**
+- `ip-api.com` - HTTP only (non-sensitive geolocation, public IP known to ISP)
+- `api.open-meteo.com` - HTTPS (`bootstrap.py:45`)
 
-## Data Flow
+**Credentials:**
+- WiFi SSID/password in `secrets.py` (local file only, not transmitted to external service)
+- No API keys needed for either service
 
-1. **Startup** (`main.py:37-41`):
-   - Initialize OLED with `OLED(rotate=ROTATE)` → SPI setup + panel init sequence
-   - Enter refresh loop every `REFRESH_SECONDS`
-
-2. **Per-Refresh Cycle** (`main.py:22-34`):
-   - Clear framebuffer: `oled.fill(0)`
-   - WiFi connect: calls `wifi.connect(SSID, PASSWORD)` → returns IP or None
-   - If no WiFi: show "no wifi" text and `show()` to panel
-   - If WiFi: fetch weather:
-     - Query ip-api.com for geolocation (lat, lon)
-     - Query Open-Meteo with coordinates
-     - Extract temperature, weather_code, is_day
-   - If no data: show "no data" text
-   - If data: draw weather icon (`icons.draw()`) and temperature text (`text_render.text()`)
-   - Render to panel: `oled.show()` → copies framebuffer to SPI → SH1107 GDDRAM
-
-3. **State Management:**
-   - No persistent state; WiFi connection is per-cycle (connects fresh each refresh)
-   - Framebuffer is the only mutable shared state (inherited from `framebuf.FrameBuffer`)
-   - Display rotation applied per `show()` if enabled
-
-## Environment Configuration
-
-**Required Credentials (Hardcoded in main.py):**
-- WiFi SSID: `REDACTED_SSID` (`main.py:9`)
-- WiFi password: `REDACTED_PASSWORD` (`main.py:10`) — **⚠️ WARNING: Credentials in source code** (no .env support in MicroPython)
-
-**Configuration Knobs (main.py:8-12):**
-- `WIFI_SSID` - Change to your network name
-- `WIFI_PASSWORD` - Change to your network password
-- `REFRESH_SECONDS` - Adjust update frequency (default 600s = 10 min)
-- `ROTATE` - Set `True` to flip display 180°
-
-**Secrets Location:**
-No .env or secrets management; credentials must be edited directly in `main.py` before deployment. No environment variable support in MicroPython on Pico.
-
-## Bandwidth & Latency Expectations
-
-- **Geolocation Query:** ~100 bytes response (ip-api.com)
-- **Weather Query:** ~300 bytes response (Open-Meteo)
-- **Total per refresh:** ~400 bytes + overhead
-- **Refresh interval:** 10 min default (600 sec)
-- **Network data usage:** ~0.24 MB/hour
+**Privacy:**
+- Public WAN IP and location sent to `ip-api.com` on every weather refresh (~10 min cadence)
+- No tracking or telemetry beyond these two requests
 
 ---
 
-*Integration audit: 2026-07-15*
+*Integration audit: 2026-07-19*

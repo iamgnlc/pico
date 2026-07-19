@@ -1,42 +1,47 @@
+<!-- refreshed: 2026-07-19 -->
 # Architecture
 
-**Analysis Date:** 2026-07-15
+**Analysis Date:** 2026-07-19
 
 ## System Overview
 
 ```text
+┌────────────────────────────────────────────────────────────────┐
+│                    Application Layer                            │
+│  `main.py` — carousel orchestration, button IRQ, poll loop     │
+│  VIEWS = (weather_view, clock_view, system_view)               │
+└─────────┬─────────────────────────┬──────────────────┬─────────┘
+          │                         │                  │
+          ▼                         ▼                  ▼
+┌─────────────────────┐   ┌──────────────────┐  ┌──────────────┐
+│  Weather View       │   │   Clock View     │  │ System View  │
+│  `views/weather_   │   │ `views/clock_    │  │ `views/      │
+│   view.py`          │   │  view.py`        │  │ system_view  │
+│                     │   │                  │  │ .py`         │
+│ render()            │   │ render()         │  │              │
+│ set_data()          │   │ set_tz_offset()  │  │ render()     │
+│ should_refresh()    │   │ should_tick()    │  │ set_wan_ip() │
+│                     │   │ should_sync()    │  │              │
+│                     │   │ sync()           │  │              │
+└─────────┬───────────┘   └────────┬─────────┘  └──────┬───────┘
+          │                        │                   │
+          │    ┌────────────────────┘                   │
+          │    │                                        │
+          ▼    ▼                                        ▼
+┌──────────────────────────┐      ┌──────────────────────────────┐
+│   I/O & Helpers          │      │   Persistent Storage         │
+│  `bootstrap.py` — WiFi   │      │ `tz_offset.txt` — TZ offset  │
+│   + ip-api + open-meteo  │      │ (flash-wear guarded)         │
+│  `icons.py` — icon draw  │      │                              │
+│  `text_render.py` — font │      └──────────────────────────────┘
+└──────┬───────────────────┘
+       │
+       ▼
 ┌──────────────────────────────────────────────────────────────────┐
-│                        Application Layer                         │
-│                           main.py                                │
-│  Renders weather + temp UI, manages refresh loop                │
-└──────────────────────┬───────────────────────────────────────────┘
-                       │ calls
-         ┌─────────────┼─────────────┬──────────────┐
-         │             │             │              │
-         ▼             ▼             ▼              ▼
-┌──────────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐
-│   wifi.py    │ │ weather  │ │ icons.py │ │text_render.py│
-│  WiFi/IP     │ │ .py      │ │Weather   │ │Font scaling  │
-│  connect()   │ │API calls │ │graphics  │ │&positioning  │
-└──────────────┘ └──────────┘ └──────────┘ └──────────────┘
-                                   │
-                                   │ uses
-                                   ▼
-┌──────────────────────────────────────────────────────────────────┐
-│                    Hardware Abstraction Layer                    │
-│                          sh1107.py                               │
-│              OLED class (framebuf.FrameBuffer)                   │
-│   SPI init, display commands, show() buffer→panel flow          │
-└──────────────────────────────────────────────────────────────────┘
-                       │
-                       │ drives
-         ┌─────────────┘
-         │
-         ▼
-┌──────────────────────────────────────────────────────────────────┐
-│         Waveshare Pico-OLED-1.3 HAT (SH1107 Controller)         │
-│     128×64 OLED, SPI (GP8:DC, GP9:CS, GP10:SCK, GP11:MOSI,    │
-│                     GP12:RST, SPI bus 1)                        │
+│                      Driver Layer                                 │
+│  `sh1107.py` — SPI hardware, GDDRAM push, rotation              │
+│  OLED subclass framebuf.FrameBuffer                              │
+│  Pinout fixed: DC=GP8, CS=GP9, SCK=GP10, MOSI=GP11, RST=GP12   │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -44,179 +49,222 @@
 
 | Component | Responsibility | File |
 |-----------|----------------|------|
-| OLED Driver | Hardware initialization, SPI comms, framebuffer→GDDRAM transfer, power management | `sh1107.py` |
-| Application | User configuration, UI rendering loop, weather fetch orchestration | `main.py` |
-| WiFi | Network connectivity, IP retrieval | `wifi.py` |
-| Weather | Remote API calls (geolocation + weather), JSON parsing | `weather.py` |
-| Icons | Weather condition → visual rendering (sun/moon/cloud/rain/snow/thunder/fog) | `icons.py` |
-| Text Render | Font scaling via double-buffer framebuf technique | `text_render.py` |
+| OLED Driver | SPI init, register sequence, GDDRAM transfer via `show()`, 180° pixel-level rotation | `sh1107.py` |
+| Application Root | Carousel state, button IRQ handlers, poll loop, bootstrap fan-out orchestration | `main.py` |
+| Weather View | Weather cache, refresh scheduling, icon + temp rendering, cache-status display | `views/weather_view.py` |
+| Clock View | Time display, NTP sync, TZ offset persistence, minute-change detection | `views/clock_view.py` |
+| System View | Network status (SSID, WAN IP, RSSI bars), live read from network state | `views/system_view.py` |
+| Bootstrap I/O | WiFi connect + IP geolocation (ip-api) + current weather (open-meteo), 6-tuple return | `bootstrap.py` |
+| Icons | WMO weather code → icon type mapper, 7 icon drawing functions | `icons.py` |
+| Text Render | Scaled font rendering via double-buffer framebuf technique | `text_render.py` |
 
 ## Pattern Overview
 
-**Overall:** Layered monolithic application with hardware abstraction driver.
+**Overall:** Layered, decoupled multi-view carousel on a single framebuffer.
 
 **Key Characteristics:**
-- Single-file driver (`sh1107.py`) decoupled from app logic via `framebuf.FrameBuffer` subclassing
-- Framebuffer-first design — all drawing operations happen in-memory first, then pushed to hardware via `show()`
-- No state persistence or complex inter-module dependencies
-- Flat namespace (no packages) suitable for embedded constraint
+- Single framebuffer (`OLED` subclass) inherited from `framebuf.FrameBuffer`, enabling free use of `text()`, `fill()`, `pixel()`, `rect()`, `ellipse()`, `line()`, `hline()`, `vline()` methods
+- Three independent view modules (`weather_view`, `clock_view`, `system_view`) with stateless rendering, no cross-view imports — composition happens only in `main.py._refresh_all()` fan-out
+- Explicit state setters (`set_data()`, `set_tz_offset()`, `set_wan_ip()`) called by orchestrator, not side-effect-driven
+- Pure predicates (`should_refresh()`, `should_tick()`, `should_sync()`) enable main loop polling without tight-loops
+- Bootstrap as a leaf I/O layer — `fetch()` returns a 6-tuple; failure semantics distinguish WiFi-fail from API-fail so callers can set correct cache status
 
 ## Layers
 
-**Hardware Driver (`sh1107.py`):**
+**Driver Layer:**
 - Purpose: Abstract Raspberry Pi Pico SPI hardware and SH1107 OLED controller protocol
 - Location: `sh1107.py`
-- Contains: OLED class, SPI pin configuration, init sequence, `show()` method, power control
-- Depends on: `machine.Pin`, `machine.SPI`, `framebuf`, `time` (MicroPython stdlib)
-- Used by: `main.py` and any user code needing display output
+- Contains: `OLED` class subclassing `framebuf.FrameBuffer`, SPI pin config, init sequence, `show()` method, power control
+- Depends on: `machine.Pin`, `machine.SPI`, `framebuf`, `micropython.const()`, `time` (MicroPython stdlib)
+- Used by: `main.py` instantiates `OLED(rotate=ROTATE)` at boot; views call `render(oled)` to paint framebuffer
 
-**Application Layer (`main.py`):**
-- Purpose: User-facing configuration, rendering orchestration, refresh loop
+**View Layer:**
+- Purpose: Render view content, manage per-view cache state and refresh scheduling
+- Location: `views/weather_view.py`, `views/clock_view.py`, `views/system_view.py`
+- Contains: Stateless `render(oled)`, state setters (`set_data()`, `set_tz_offset()`, `set_wan_ip()`), predicates (`should_refresh()`, `should_tick()`, `should_sync()`), sync methods (`clock_view.sync()`)
+- Depends on: `sh1107.WIDTH/HEIGHT`, `time`, `ntptime` (clock), `network` (system), `text_render`, `icons` (weather)
+- Used by: `main.py` polls predicates and calls render/setters/sync on the current view and during refresh fan-out
+
+**Application Layer:**
+- Purpose: Orchestrate carousel navigation, refresh scheduling, WiFi bootstrap, and main poll loop
 - Location: `main.py`
-- Contains: User config constants (`WIFI_SSID`, `WIFI_PASSWORD`, `REFRESH_SECONDS`, `ROTATE`), `_render()` orchestrator, `__main__` entry point
-- Depends on: `sh1107.OLED`, `wifi`, `weather`, `icons`, `text_render`
-- Used by: MicroPython runtime (executed as main entry point)
+- Contains: Carousel state (`_current_idx`, `_pending_dir`), button IRQ handlers (`_on_key0()`, `_on_key1()`), debounce logic, refresh orchestrator (`_refresh_all()`), page-dot UI, boot sequence, main event loop
+- Depends on: `sh1107.OLED`, `views.*`, `bootstrap`, `text_render`, `time`, `machine.Pin`
+- Used by: MicroPython runtime; this is the entry point
 
-**WiFi Module (`wifi.py`):**
-- Purpose: Network connection and IP acquisition
-- Location: `wifi.py`
-- Contains: `connect(ssid, password, timeout)` function
-- Depends on: `network`, `time` (MicroPython stdlib)
-- Used by: `main.py._render()`
+**I/O Layer (Bootstrap):**
+- Purpose: Fetch network data (WiFi IP, geolocation, weather, WAN IP) in a single round-trip
+- Location: `bootstrap.py`
+- Contains: `_wifi_connect()` internal helper, `fetch()` public function returning 6-tuple
+- Depends on: `network.WLAN`, `urequests` (HTTP client), `time`, lazy-imported `secrets`
+- Used by: `main.py._refresh_all()` calls `bootstrap.fetch()` and fans out results to all three view setters
 
-**Weather Module (`weather.py`):**
-- Purpose: Fetch current weather data from remote APIs
-- Location: `weather.py`
-- Contains: `current()` function that queries IP geolocation then weather forecast
-- Depends on: `urequests` (MicroPython HTTP library)
-- Used by: `main.py._render()`
-
-**Icon Renderer (`icons.py`):**
-- Purpose: Draw weather condition icons using framebuffer primitives
-- Location: `icons.py`
-- Contains: WMO weather code → icon type mapping, 7 rendering functions (sun/moon/cloud/rain/snow/thunder/fog), dispatcher
-- Depends on: `framebuf` (via caller-supplied framebuffer)
-- Used by: `main.py._render()` for icon drawing at screen coordinates
-
-**Text Renderer (`text_render.py`):**
-- Purpose: Scaled font rendering (native 1x only available in framebuf)
-- Location: `text_render.py`
-- Contains: `text(fb, s, x, y, scale, color)` function using double-buffer technique
-- Depends on: `framebuf` (via caller-supplied framebuffer)
-- Used by: `main.py._center_text()` for temperature display
+**Helper Layer:**
+- Purpose: Weather icon rendering, scaled font rendering
+- Location: `icons.py`, `text_render.py`
+- Contains: WMO code → kind mapper, 7 icon drawing primitives, double-buffer text scaler
+- Depends on: `framebuf` (reader-supplied), passed as arguments
+- Used by: `weather_view.render()` calls `icons.draw()` for weather icon; views call `text_render.text()` for text output
 
 ## Data Flow
 
 ### Primary Render Cycle
 
-1. **Entry:** `__main__` block in `main.py:37–41` spawns OLED instance with rotation config, enters infinite loop
-2. **Trigger:** Loop calls `_render(oled)` every `REFRESH_SECONDS` (config at `main.py:11`)
-3. **Clear:** `oled.fill(0)` clears framebuffer in-memory (`sh1107.py:29`, inherited from `framebuf.FrameBuffer`)
-4. **Fetch WiFi:** `wifi.connect(ssid, password)` blocks up to 20s to establish network; returns IP or None (`wifi.py:5`)
-5. **Fetch Weather:** If connected, `weather.current()` calls IP geolocation API then Open-Meteo API; returns `(temp, wmo_code, is_day)` or `(None, None, None)` on error (`weather.py:4`)
-6. **Render UI:** Depending on data availability:
-   - No WiFi → center "no wifi" text
-   - No weather data → center "no data" text
-   - Success → draw weather icon + temperature via `icons.draw()` + `_center_text()`
-7. **Show:** `oled.show()` transfers framebuffer to display GDDRAM via SPI (`sh1107.py:65–90`)
-8. **Sleep:** `time.sleep(REFRESH_SECONDS)` blocks until next render
+1. **Boot sequence (`main.__main__`, lines 87–114):**
+   - `OLED(rotate=ROTATE)` instantiated (`sh1107.py:17`)
+   - Button pins (`KEY0=GP15`, `KEY1=GP17`) configured with `irq()` handlers (`main:92-95`)
+   - Pre-fetch render: `weather_view.render(oled)` draws "connecting..." from cache-status "pending" (`weather_view:30-31`)
+   - Page dots drawn via `_draw_page_dots(oled, _current_idx)` (`main:67-72`)
+   - `oled.show()` pushed to GDDRAM (`sh1107.py:65-90`)
+   - Blocking `_refresh_all(oled)` call: `bootstrap.fetch()` (~20s timeout) → view state setters fan-out → `weather_view.render(oled)` painted with real data
+   - Page dots + `oled.show()` again
+   - Best-effort `clock_view.sync()` for NTP (non-blocking failure)
 
-### SPI Buffer Transfer (`show()` flow, `sh1107.py:65–90`)
+2. **Main poll loop (`main:116–138`):**
+   - Every 100ms (`_POLL_MS`):
+     a. Check `_pending_dir != 0` → carousel advance: `VIEWS[_current_idx].render(oled)` → dots → `show()`
+     b. Check `weather_view.should_refresh(now)` → `_refresh_all(oled)` (blocking ~2s typical, ~20s on timeout) → overpaint with current view if not Weather → dots → `show()`
+     c. Check `_current_idx == 1 and clock_view.should_tick(now)` → `clock_view.render(oled)` → dots → `show()`
+     d. Check `clock_view.should_sync(now)` → `clock_view.sync(oled)` (NTP call, non-blocking)
+     e. Sleep 100ms
 
-1. **Optional Rotation:** If `self.rotate == True`:
-   - Create temporary 1024-byte buffer `rot_buf`
-   - Iterate all 128×64 pixels, read source pixel, write to rotated position (180° flip)
-   - Use pixel-level operations to preserve GDDRAM wrap correctness (see **SH1107 Gotchas** below)
-   - Point `buf` to rotated buffer; otherwise use original `self.buffer`
-2. **Page-by-Page Addressing:** SH1107 uses page-based (vertical) addressing — 64 rows / 8 bits per row = 8 pages
-   - For each of 64 rows `i`:
-     - Calculate column address `col = 63 - i` (reverse row order for GDDRAM layout)
-     - Send page address: `0xB0` (page register)
-     - Send column low/high nibble: `0x00 + (col & 0x0F)` and `0x10 + (col >> 4)`
-     - Write 16 bytes (128 pixels / 8 bits per byte) from `buf[i*16:(i+1)*16]`
-3. **Per-Byte CS Toggle:** For each data byte:
-   - Set DC high (data mode)
-   - Set CS low
-   - Write single byte to SPI
-   - Set CS high
-   - **Reason:** SH1107 does not latch correctly with continuous CS; see **SH1107 Gotchas #2**
+### Refresh Fan-Out (from `_refresh_all()`, `main:75–84`)
 
-## SH1107 Hardware Constraints
+```
+bootstrap.fetch() returns (ip, temp, code, is_day, tz_offset, wan_ip) 6-tuple
+    │
+    ├─→ weather_view.set_data(ip, temp, code, is_day)
+    │   - Sets cache status: "ok" | "no_data" | "no_wifi"
+    │   - Stamps _last_refresh_ms for interval scheduling
+    │
+    ├─→ clock_view.set_tz_offset(tz_offset)
+    │   - Updates _cached_tz_offset
+    │   - Writes to tz_offset.txt (flash-wear guard: only if changed)
+    │
+    ├─→ system_view.set_wan_ip(wan_ip)
+    │   - Updates _cached_wan_ip RAM-only (no persistence)
+    │
+    └─→ weather_view.render(oled)
+        - Paints the now-populated cache to GDDRAM
+```
 
-These constraints are baked into `sh1107.py` — **do not modify without understanding the hardware:**
+### Button Press Flow
 
-### Gotcha #1: 0x21 Single-Byte Command
+```
+Key press (GP15 or GP17 falling edge)
+    │
+    └─→ _on_key0(pin) or _on_key1(pin) IRQ handler (`main:49-64`)
+        - Debounce check: `time.ticks_diff(now, _last_press_ms) < _DEBOUNCE_MS` → early return
+        - Set `_pending_dir = -1` (previous) or `+1` (next)
+        - Stamp _last_press_ms
+    │
+    └─→ Main loop detects `_pending_dir != 0` (`main:118-123`)
+        - Carousel advance: `_current_idx = (_current_idx + _pending_dir) % 3`
+        - Clear _pending_dir
+        - `VIEWS[_current_idx].render(oled)` — render the new view's cache
+        - Draw page dots
+        - `oled.show()` — GDDRAM push
+```
 
-**The trap:** On SH1107, control register `0x20` (horizontal addressing) and `0x21` (vertical addressing) are *complete commands* that self-encode the addressing mode. Sending `0x21` followed by a data byte treats the data byte as the *next command*, silently breaking column/row addressing.
+### State Management
 
-**Current implementation:** `_init()` sends `0x21` alone without follow-up argument (`sh1107.py:50`). Do not add `0x20` or `0x21` with parameters.
+**Per-module caches:**
+- `weather_view`: `_cached_temp`, `_cached_code`, `_cached_is_day`, `_cache_status`
+- `clock_view`: `_cached_tz_offset` (persisted to flash), `_synced` flag, `_last_render_min`
+- `system_view`: `_cached_wan_ip` (RAM-only)
 
-### Gotcha #2: CS Must Toggle Per Byte in `show()`
+**Main-module state:**
+- `_current_idx` — active view in carousel (0=weather, 1=clock, 2=system)
+- `_pending_dir` — IRQ-set direction; loop reads and clears
+- `_last_press_ms` — debounce timestamp, shared across KEY0 and KEY1
 
-**The trap:** Typical SPI convention groups all chip-select activity — one CS pulse per multi-byte chunk. SH1107 *does not latch data into GDDRAM unless CS toggles between bytes*. A single continuous CS-low burst across 16 bytes results in 15 bytes silently discarded.
+**Scheduling timestamps:**
+- `weather_view._last_refresh_ms` — when last full refresh happened
+- `clock_view._last_sync_ms` — when last NTP sync was attempted
+- `clock_view._last_render_min` — minute of last clock render (for change detection)
 
-**Current implementation:** `show()` toggles CS around every single data byte (`sh1107.py:87–90`). This matches Waveshare's reference implementation. Violates typical SPI conventions but required for this panel.
+## Key Abstractions
 
-### Gotcha #3: Rotation via Pixel Operations, Not Byte Shuffling
+**View Abstraction (3 implementations):**
+- Purpose: Decouple view rendering and state from orchestration
+- Pattern: Each view exports `render(oled)` (stateless painter), state setters (`set_*`), and predicates (`should_*`)
+- Examples: `weather_view`, `clock_view`, `system_view`
+- Constraint: Views do NOT import each other; composition is `main.py`'s responsibility
 
-**The trap:** The `_init()` sequence sets display offset `0x60` (96 lines), creating a GDDRAM wrap: physical rows 0–31 display GDDRAM rows 96–127; physical rows 32–63 display GDDRAM rows 0–95. Because of this wrap, the buffer-to-panel mapping is *not a linear transform* across all 1024 bytes. A naive byte-reverse + bit-reverse (which produces 180° rotation mathematically) moves active pixels into the invisible GDDRAM half, blanking the screen.
+**Framebuffer-first Design:**
+- Purpose: All drawing to in-memory `FrameBuffer`, then single `show()` push to hardware
+- Pattern: Subclass `framebuf.FrameBuffer` in driver; views paint via inherited methods
+- Benefit: No screen tearing, atomic refresh, trivial 180° rotation via pixel-level reads/writes
 
-**Hardware rotation attempted and broken:** Registers `0xA1` (segment remap) and `0xC8` (COM scan direction) exist, but enabling them *fights the display-offset wrap* and produces inverted/scrambled output.
+**Bootstrap 6-tuple:**
+- Purpose: Separate network I/O from view logic; encode failure semantics in return value
+- Pattern: `(ip, temp, code, is_day, tz_offset, wan_ip)` where `None` values indicate failure class
+- Semantics: `ip=None` → no WiFi; `ip≠None, temp=None` → WiFi ok but API failed
+- Benefit: Views can set correct cache status without exception handling
 
-**Current implementation:** `show()` rotates at the framebuffer pixel level (`sh1107.py:66–74`), reading/writing via `framebuf.FrameBuffer.pixel()` operations. This stays within the logical 128×64 coordinate space guaranteed to display correctly. Cost: ~8KB temporary buffer + O(128×64) pixel operations vs. byte-level, but guarantees correctness. Enable only when `OLED(rotate=True)` is passed.
-
-### Gotcha #4: MONO_HMSB Framebuffer Format Required
-
-**The trap:** `show()` assumes framebuffer format `MONO_HMSB` (128 bits = 16 bytes per row, bits packed horizontally/MSB-first). The alternative `MONO_VLSB` (bits packed vertically) scrambles the byte layout. Once the wrong format is set in the `FrameBuffer` constructor, all subsequent pixel operations invert the mapping, producing garbage output.
-
-**Current implementation:** Framebuffer created with `framebuf.MONO_HMSB` (`sh1107.py:30`). Matches Waveshare's reference. Do not change to `MONO_VLSB`.
+**Cache-Status State Machine (weather_view):**
+- States: "pending" (initial), "connecting..." (boot pre-fetch), "ok" (valid data), "no_wifi", "no_data"
+- Transitions: Driven by `set_data()` called from `main._refresh_all()` after each fetch
+- Refresh intervals: 10 min if "ok", 60s if not (WEATHER-03, WEATHER-09)
 
 ## Entry Points
 
-**MicroPython Runtime Entry:**
-- Location: `main.py:37–41` (`if __name__ == "__main__"` block)
-- Triggers: Pico boots or user runs `main.py` via `mpremote run`/Thonny
+**Main Entry Point:**
+- Location: `main.py:87–138` (`if __name__ == "__main__"` block)
+- Triggers: Pico boots or user runs `main.py` via `mpremote run` or Thonny IDE
 - Responsibilities:
-  1. Instantiate `OLED(rotate=ROTATE)` with user's rotation preference
-  2. Enter infinite loop calling `_render(oled)` every `REFRESH_SECONDS`
-  3. Graceful degradation if WiFi/weather APIs fail (shows fallback messages)
+  - `OLED` instantiation with rotation config
+  - Button IRQ setup (debounce, direction)
+  - Pre-fetch render (user feedback during bootstrap)
+  - Blocking boot fetch + view state fan-out
+  - Clock NTP sync attempt
+  - Main poll loop: carousel nav, refresh scheduling, clock ticks, sync retries
 
-**Typical Deployment:**
-```bash
-mpremote cp sh1107.py main.py :
-mpremote run main.py
-```
-
-Or open both in Thonny IDE, select Pico as device, and press Run.
+**Deployment:**
+- Files copied to Pico flash: `sh1107.py`, `main.py`, `bootstrap.py`, `icons.py`, `text_render.py`, `views/` package, `secrets.py`
+- Execution: MicroPython runtime loads and runs `main.py`
 
 ## Architectural Constraints
 
-- **Threading:** Single-threaded event loop. `wifi.connect()` and `weather.current()` are blocking. No async/await. Refresh cycle is synchronous.
-- **Global state:** None — all state is local or instance variables within `OLED` class.
-- **Circular imports:** None. Dependency graph is acyclic: `main.py` → {`sh1107`, `wifi`, `weather`, `icons`, `text_render`}, no feedback.
-- **Memory model:** Framebuffer is 1024 bytes fixed. Rotation creates additional 1024-byte temporary buffer. Total ~2KB active + MicroPython runtime heap.
-- **Hardware pinout:** Fixed by HAT header — no configuration possible (DC=GP8, CS=GP9, SCK=GP10, MOSI=GP11, RST=GP12, SPI bus 1). Do not attempt to move pins.
+- **Threading:** Single-threaded event loop. `bootstrap.fetch()` is blocking (20s WiFi timeout + <2s API round-trip). No async/await, no coroutines. Refresh blocks the poll loop; if visible delay is unacceptable, refactor to async via `asyncio` module (MicroPython 1.20+).
+- **Global state:** All state is module-level in views or `main.py`. No singletons outside these files. Each view is a module, not a class, so caches are file-local. `OLED` is a class instance held in `main`'s scope.
+- **Circular imports:** None. Dependency graph is strictly acyclic: `main.py` → {`sh1107`, `views.*`, `bootstrap`, `text_render`, `icons`}. Views do NOT import each other.
+- **Memory model:** Framebuffer is 1024 bytes fixed (128×64 ÷ 8 bits/byte). Rotation creates a second 1024-byte buffer. Total ~2KB display memory + MicroPython heap for locals, imports, and cached API responses.
+- **Hardware pinout:** Fixed by Waveshare HAT header — not user-configurable: DC=GP8, CS=GP9, SCK=GP10, MOSI=GP11, RST=GP12, SPI bus 1, KEY0=GP15, KEY1=GP17. Do not move pins without hardware redesign.
+- **Network blocking:** `bootstrap.fetch()` blocks the main loop for up to 20s on a cold boot with no WiFi. Button presses during this window are still captured by IRQ handlers and dispatched after fetch returns. No timeout configuration per call; 20s hardcoded in `bootstrap._wifi_connect()`.
 
 ## Error Handling
 
-**Strategy:** Silent degradation with on-screen messaging.
+**Strategy:** Graceful degradation via state machine. Failures update cache-status or `_synced` flag; views render appropriate fallback UI.
 
 **Patterns:**
-- WiFi connection timeout → `wifi.connect()` returns `None` after 20s, `main.py` displays "no wifi"
-- Weather API failure (network, JSON parse, HTTP error) → `weather.current()` catches all exceptions, returns `(None, None, None)`, `main.py` displays "no data"
-- No exception bubbling; all failures result in fallback UI display
+- **WiFi fail:** `bootstrap.fetch()` returns `(None, ...)` → `weather_view.set_data()` sets `_cache_status = "no_wifi"` → `weather_view.render()` displays "no wifi"
+- **API fail (WiFi ok):** `bootstrap.fetch()` returns `(ip, None, ...)` → `weather_view.set_data()` sets `_cache_status = "no_data"` → `weather_view.render()` displays "no data"
+- **NTP fail:** `clock_view.sync()` catches all exceptions, leaves `_synced = False` → `clock_view.render()` displays "--:--" with retry in 60s
+- **File I/O fail (TZ offset persistence):** `clock_view.set_tz_offset()` wraps file write in try/except; silently fails, next boot retries
+- **No exception bubbling:** All failures are trapped and converted to UI state. The main loop never crashes; it sleeps and retries.
 
 ## Cross-Cutting Concerns
 
-**Logging:** None — embedded device with no host console at runtime. Debug via printing to UART (outside scope of display driver).
+**Refresh Scheduling:**
+- `weather_view.should_refresh()` returns True every 10 min if cache is "ok", every 60s if not
+- Implemented via `time.ticks_ms()` deltas; allows testing without real time passage
+- Decoupled from view rendering
 
-**Validation:** `weather.current()` validates HTTP response structure via `.json()["current"][field]` access — KeyError → caught and returns `(None, None, None)`. Input validation not needed (hardcoded URLs, no user config at runtime).
+**NTP Sync Scheduling:**
+- `clock_view.should_sync()` returns True after 6h if synced, every 60s if not
+- First success sets `_synced = True` and starts the 6h timer
+- Decoupled from clock rendering; can proceed in background
 
-**Configuration:** All user config at module level in `main.py:8–13`:
-- `WIFI_SSID`, `WIFI_PASSWORD` — network credentials
-- `REFRESH_SECONDS` — render cycle interval
-- `ROTATE` — 180° display flip (boolean passed to `OLED()`)
+**Button Debounce:**
+- Single `_last_press_ms` timestamp shared by both buttons (physical buttons won't fire within 50ms)
+- Debounce threshold `_DEBOUNCE_MS = 50` tunable in `main.py:15`
+
+**TZ Offset Persistence:**
+- `clock_view` reads `tz_offset.txt` at module load (before `main.py` imports it)
+- Writes only on change (flash-wear guard); stationary device writes once ever (first boot)
+- Fallback: if file missing/malformed, `_cached_tz_offset = None`, next fetch populates it
 
 ---
 
-*Architecture analysis: 2026-07-15*
+*Architecture analysis: 2026-07-19*

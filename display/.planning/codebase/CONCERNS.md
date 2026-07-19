@@ -1,225 +1,249 @@
 # Codebase Concerns
 
-**Analysis Date:** 2026-07-15
+**Analysis Date:** 2026-07-19
 
-## Fragile Areas: SH1107 Hardware Traps
+## SH1107 Driver Gotchas
 
-These four hardware-specific behaviors are documented in `CLAUDE.md` and encoded in the driver. Future modifications to `sh1107.py` must not violate these constraints or the display will silently malfunction.
+**Hardware Protocol Fragility:**
 
-### 1. Single-Byte Command `0x21`
+The SH1107 controller has four non-obvious protocol constraints that are load-bearing in `sh1107.py`. Violating any of them silently breaks the display without error messages.
 
-**What happens:** The SH1107 addressing-mode command `0x21` is a complete, self-contained instruction—not a command+argument pair like most SPI commands.
+### Gotcha 1: `0x21` Command is Single-Byte, Not Command+Argument
+
+**What happens:** `sh1107.py:50` sends `0x21` (memory addressing mode: vertical) without an argument byte that follows. The init sequence groups single-byte commands separately from command+argument pairs.
+
+**Why fragile:** Many SPI display protocols use command+argument pairs consistently (e.g., `0x20 0x21` → "enable vertical mode"). On SH1107, sending `0x21` followed by any data byte will interpret that data byte as the next command, silently breaking the addressing mode for all subsequent column/page commands.
+
+**Risk:** If someone refactors the init loop to add a trailing argument or inserts a new command+arg pair after `0x21`, the display will go blank or show scrambled pixels with no exception thrown.
 
 **Files:** `sh1107.py:50`
 
-**Why fragile:** If a refactor sends an argument byte after `0x21`, that byte will be interpreted as the *next* command and silently corrupt the addressing state. The display will continue responding (no error), but output will be scrambled.
-
-**Do this instead:** When sending `0x21`, send it alone via `_cmd(0x21)`. Never follow it with a data byte.
-
-**Current state:** Correctly implemented at line 50 in the init sequence. The command is sent standalone.
+**Mitigation:** Comment at line 50 notes this is a "single-byte cmd". CLAUDE.md documents it in the "Non-obvious SH1107 gotchas" section.
 
 ---
 
-### 2. CS Must Toggle Per-Byte in `show()`
+### Gotcha 2: CS (Chip Select) Must Toggle Per Byte in `show()`
 
-**What happens:** In `show()`, the chip-select (CS) line must toggle around *every single data byte* written to GDDRAM, not in one continuous burst across the 16-byte column.
+**What happens:** `sh1107.py:86-90` writes the 16-byte column to GDDRAM with CS toggled around each individual byte, not once per column (which is typical SPI protocol).
 
-**Files:** `sh1107.py:86-90`
+**Why fragile:** Standard SPI convention is to hold CS low for the entire transaction (all 16 bytes), then raise it once. On this panel, a continuous CS-low burst does not latch the bytes correctly into GDDRAM; the register pointer drifts and the display shows corrupted content in later columns.
 
-**Why fragile:** This violates typical SPI protocol (CS usually low for the entire transaction). The SH1107 does not latch 16-byte columns correctly when CS stays low continuously. Attempting to optimize by holding CS low across all 16 bytes will cause bytes to drop or corrupt in GDDRAM.
+**Risk:** Optimization attempts to "fix" the inefficient per-byte CS toggle will break the driver. Waveshare's reference implementation (`Pico-OLED-1.3(spi).py`) does the same per-byte toggle, confirming this is required by the hardware.
 
-**Do this instead:** Keep the per-byte toggle pattern:
-```python
-for byte in buf[i * 16:(i + 1) * 16]:
-    self.dc(1)
-    self.cs(0)
-    self.spi.write(bytes([byte]))
-    self.cs(1)
-```
+**Files:** `sh1107.py:83-90`
 
-**Current state:** Correctly implemented. CS toggles for every byte. Verified against Waveshare's reference `write_data()`.
+**Mitigation:** Inline comment at line 83-84 explains the behavior and its necessity.
 
 ---
 
-### 3. Rotation Must Use Framebuf-Pixel Level, Not Byte Shuffling
+### Gotcha 3: Rotation Must Use Pixel-Level Reads/Writes, Not Buffer-Byte Shuffling
 
-**What happens:** The display is initialized with offset `0xD3 0x60` (display offset = 96 bytes), which creates a wrap in the visible GDDRAM region. Physical rows 0–31 show GDDRAM bytes 96–127; rows 32–63 show GDDRAM bytes 0–31. Because of this wrap, the 1024-byte framebuffer does not map linearly to the panel.
+**What happens:** `sh1107.py:66-76` implements 180° rotation by reading each pixel from the original buffer, then writing it to flipped coordinates in a temporary buffer. The original buffer is discarded and the rotated buffer is sent to the panel.
 
-**Files:** `sh1107.py:56, 65-75`, `main.py:12`
+**Why fragile:** The SH1107 has a display-offset of `0x60` (96) set at init (`sh1107.py:56`). This creates a wrap in the visible GDDRAM region: physical rows 0–31 display GDDRAM bytes 96–127, and physical rows 32–63 display GDDRAM bytes 0–31. Because of this non-linear mapping, byte-level transforms (e.g., reverse all bytes, reverse bits within each byte) will move active pixels into the invisible half of the GDDRAM buffer, causing the screen to go blank or show only the lower half of the image. Hardware-based rotation (setting `0xA1` segment remap + `0xC8` COM scan) also fails because it fights the display-offset wrap.
 
-**Why fragile:** Byte-level or bit-level buffer transforms (reverse + flip) will move active pixels into the invisible half of the GDDRAM and blank the screen. Hardware rotation via segment-remap (`0xA1`) and COM-scan (`0xC8`) commands also breaks because they fight the display-offset wrap.
+**Risk:** Any attempt to optimize rotation by shuffling buffer bytes instead of using `framebuf.pixel()` will silently corrupt the display.
 
-**Do this instead:** Rotate at the framebuffer-pixel level using `framebuf.pixel()` reads and writes, as implemented in `show()` lines 66–74. This keeps pixel coordinates guaranteed to stay within the displayable region.
+**Files:** `sh1107.py:66-76` (rotation implementation), `sh1107.py:56` (display offset `0x60`)
 
-**Current state:** Correctly implemented. When `rotate=True`, a temporary framebuffer is created and pixels are read/written individually via `pixel()`. Hardware rotation is disabled.
-
----
-
-### 4. Framebuffer Format Must Be `MONO_HMSB`
-
-**What happens:** The framebuffer is initialized with `framebuf.MONO_HMSB` (horizontal, most-significant-bit-first). The `show()` method walks the buffer as 128-bit-wide rows of 16 bytes.
-
-**Files:** `sh1107.py:30, 69`
-
-**Why fragile:** Using `MONO_VLSB` (vertical, least-significant-bit-first) will scramble the bit layout because the byte ordering and bit significance differ. Pixels will appear in the wrong positions or not at all.
-
-**Do this instead:** Always use `framebuf.MONO_HMSB`. This matches Waveshare's reference implementation and the `show()` byte-walking logic.
-
-**Current state:** Correctly implemented at initialization and in the rotation buffer.
+**Mitigation:** CLAUDE.md includes detailed explanation of the GDDRAM wrap and why byte-shuffling fails.
 
 ---
 
-## No Test Coverage
+### Gotcha 4: Framebuffer Format Must Be `MONO_HMSB`
 
-**What's not tested:** None. There are no unit tests, integration tests, or automated test fixtures on-device or host-side.
+**What happens:** `sh1107.py:30` subclasses `framebuf.FrameBuffer` with format `MONO_HMSB` (horizontal byte packing, MSB first). This matches the SH1107's byte layout.
 
-**Files:** All source files (`sh1107.py`, `main.py`, `wifi.py`, `weather.py`, `icons.py`, `text_render.py`)
+**Why fragile:** The `show()` method walks the buffer as 128-wide rows of 16 bytes. If the format is changed to `MONO_VLSB` (vertical byte packing, LSB first), the bit layout scrambles—pixels shift vertically within bytes, and the display shows garbled content.
 
-**Risk:** Any change to the four SH1107 gotchas above (or to pixel rendering logic) has zero protection. A refactor can silently break the display. The only validation is manual testing on physical hardware.
+**Risk:** Attempting to use `MONO_VLSB` for any reason (e.g., perceived memory optimization) will break the driver without a clear cause.
 
-**Priority:** High
+**Files:** `sh1107.py:30`
 
-**Safe modification:** Before changing `show()`, rotation logic, or the init sequence, always test on hardware with both `rotate=True` and `rotate=False`. Compare against the Waveshare reference: https://github.com/waveshare/Pico_code/blob/main/Python/Pico-OLED-1.3/Pico-OLED-1.3(spi).py
-
----
-
-## WiFi Credentials in Source Code
-
-**Problem:** WiFi SSID and password are hardcoded in `main.py:9-10`.
-
-**Files:** `main.py:9-10`
-
-**Exposure risk:** Credentials in source become part of git history. If the repository is ever made public or shared, the network password is exposed.
-
-**Current mitigation:** Repository is private. Credentials are not in a `.env` file, so they cannot be accidentally gitignored and exposed.
-
-**Recommendation:** Before deploying to a shared or public repository, externalize credentials:
-
-1. Move `WIFI_SSID` and `WIFI_PASSWORD` to a `secrets.py` file (not committed; added to `.gitignore`)
-2. Import them in `main.py`: `from secrets import WIFI_SSID, WIFI_PASSWORD`
-3. Provide a `secrets.example.py` template for setup
+**Mitigation:** Format is specified at object construction; changing it requires modifying the class. No comment explicitly warns about `MONO_VLSB`, but the format matches Waveshare's reference.
 
 ---
 
-## No Error Handling for WiFi/API Failures
+## IP-API Extended Fields Risk
 
-**Problem:** WiFi and weather API calls can fail silently or with partial results in production, leaving users without feedback on what went wrong.
+**Issue:** The `?fields=lat,lon,offset,query` parameter in `bootstrap.py:40` is critical and was added to fix a silent failure.
 
-**Files:** `wifi.py:5-14`, `weather.py:4-18`, `main.py:24-33`
+**What can go wrong:** If the `?fields=` query parameter is removed or the field list is incomplete (e.g., missing `offset` or `query`), the ip-api endpoint returns default fields only. The `offset` and `query` fields come back as `None`, causing downstream setters in `main._refresh_all()` to no-op (see `clock_view.set_tz_offset()` and `system_view.set_wan_ip()`). The clock will display `--:--` forever, and the system view will show `IP: --` even though WiFi is connected.
 
-**Current behavior:**
+**Files:** `bootstrap.py:40` (the query string), `clock_view.py:39-42` (offset setter guards on None), `system_view.py:36-39` (IP setter guards on None)
 
-- `wifi.connect()` returns `None` if unable to connect within 20 seconds. `main.py` catches this and displays "no wifi".
-- `weather.current()` wraps all network I/O in a try-except that silently swallows exceptions (line 17-18). Returns `(None, None, None)` on any error. `main.py` displays "no data".
+**History:** Plan 03-02 shipped without the `?fields=` parameter. The clock stayed at `--:--` forever in that iteration because `ip-api` was returning `"offset": null` silently.
 
-**Why it's brittle in the field:**
+**Current state:** The `?fields=` parameter is present and correct as of 2026-07-19.
 
-- No visibility into *why* the API call failed (DNS timeout? HTTP 5xx? Bad JSON response?).
-- No retry logic. If `ip-api.com` or `api.open-meteo.com` is temporarily unavailable, users see "no data" forever (or until the next refresh cycle).
-- Exception types are discarded, making it impossible to distinguish transient errors (retry) from permanent ones (config).
-- Stale display: If one API call times out, the weather icon may not refresh for `REFRESH_SECONDS` (600 seconds = 10 minutes).
-
-**Improvement path:**
-
-1. Add structured error handling in `weather.py`:
-   - Distinguish network timeouts (retry) from parsing errors (skip).
-   - Return a status tuple: `(temp, code, is_day, error_reason)` where `error_reason` is a string like `"timeout"`, `"no_connection"`, or `"api_error"`.
-   - Log (via `print()`) the error for debugging.
-
-2. Implement retry logic in `main.py`:
-   - On transient errors, retry after a shorter interval (10–30 seconds) before the next full refresh.
-   - On permanent errors (bad API endpoint), skip retries and wait for the next refresh cycle.
-
-3. Display more informative messages:
-   - `"timeout"` instead of generic `"no data"` so users know to wait.
+**Mitigation:** Add a test or assertion that verifies ip-api returns non-None `offset` and `query` fields on first successful boot, before relying on them in downstream logic.
 
 ---
 
-## Hardcoded Pinout
+## Memory and Heap Fragmentation
 
-**What it is:** The pinout is defined as module-level constants in `sh1107.py:7-11` (DC=GP8, CS=GP9, SCK=GP10, MOSI=GP11, RST=GP12, SPI bus 1).
+**Issue:** Framebuffer rotation allocates a temporary 1024-byte buffer on every call to `show()` when `ROTATE=True`.
 
-**Files:** `sh1107.py:7-11`
+**What happens:** `sh1107.py:67` creates `rot_buf = bytearray(len(self.buffer))` on every frame. With default settings (full screen refresh every tick, ~100ms poll cadence), this is ~10 allocations per second, each of 1024 bytes.
 
-**Is this a concern?** No. The Waveshare Pico-OLED-1.3 HAT plugs directly onto the Pico W header with a fixed pinout. The HAT user cannot change the pins without removing the HAT and hand-soldering a custom cable (not a user-supported workflow). Hardcoding is the correct choice.
+**Risk to this codebase:** The Pico W has ~264 KB SRAM. The rotation buffer + original buffer = 2 KB per frame; MicroPython's heap fragmentation from repeated alloc/free cycles could eventually prevent future feature additions (e.g., caching weather icons, larger text buffers).
 
-**Current state:** Correct as-is.
+**Frequency:** Only in frames where `ROTATE=True`. With `ROTATE=False` (the default in main.py is `ROTATE=True`; see line 10), this happens every frame.
 
----
+**Files:** `sh1107.py:67`, `main.py:10` (ROTATE = True)
 
-## API Response Parsing
-
-**Problem:** Weather data parsing in `weather.py:14-16` assumes specific JSON structure without validation.
-
-**Files:** `weather.py:14-16`
-
-**Risk:** If `api.open-meteo.com` changes response format, `cur["temperature_2m"]`, `cur["weather_code"]`, or `cur["is_day"]` may raise `KeyError` (caught by the broad `except Exception` on line 17, but user sees "no data" without knowing why).
-
-**Safe modification:** Use `.get()` with defaults:
-```python
-temp = cur.get("temperature_2m")
-code = cur.get("weather_code")
-is_day = cur.get("is_day")
-if temp is None or code is None or is_day is None:
-    return None, None, None
-```
-
-This makes the intent explicit: if any field is missing, bail out (rather than relying on exception handling).
+**Mitigation:** Not urgent for current scope. If fragmentation becomes an issue, pre-allocate `rot_buf` as an instance variable in `__init__` and reuse it.
 
 ---
 
-## Battery/Power Monitoring
+## Boot WiFi Timeout is Blocking
 
-**Problem:** The device has no battery status monitoring or power-down logic for battery-powered operation.
+**Issue:** The initial `bootstrap.fetch()` call at `main.py:108` is blocking and can take up to 20 seconds if WiFi is unavailable or slow to connect.
 
-**Files:** `main.py:37-41`, `sh1107.py:92-96`
+**What happens:** On cold boot, `_wifi_connect()` at `bootstrap.py:6-15` iterates up to 20 times with 1-second sleeps, for a total of 20 seconds. During this time, the UI shows "connecting..." and button presses are still captured (IRQ handlers fire), but the main loop is blocked.
 
-**Current state:** The main loop runs forever, refreshing weather every 600 seconds. If battery-powered, the device will drain the battery in hours without user intervention.
+**Risk:** Users pressing buttons during the 20s boot window see no response until the fetch completes. If WiFi is down, they wait 20 seconds to see "no wifi".
 
-**Recommendation:** If intended for battery deployment:
+**Files:** `bootstrap.py:6-15` (timeout=20), `main.py:108` (blocking fetch call)
 
-1. Add a battery-voltage ADC read (GPIO27 on Pico W) and display voltage or battery percentage.
-2. Implement a `poweroff()` mode that disables WiFi and dims/turns off the display after a timeout.
-3. Add a wake-up mechanism (GPIO interrupt on a button) to return from sleep.
-
-**Current state:** Not a concern if powered by USB or a 5V supply. Not required for development, but critical for field deployment.
+**Mitigation:** The comment at `main.py:97-103` acknowledges this and pre-renders "connecting..." before the fetch. The IRQ handlers capture button presses during the wait, which are dispatched immediately after the fetch returns (see `main.py:118-123`). This is a known trade-off; MicroPython has no async/await on embedded devices, so a timeout-agnostic approach would require event-driven WiFi driver integration (out of scope for current architecture).
 
 ---
 
-## Missing Network Diagnostics
+## NTP Sync Retry Cadence
 
-**Problem:** There is no way to debug network issues on the device without serial output.
+**Issue:** Clock syncing has a 60-second retry cadence until first success, then 6-hour re-sync cadence.
 
-**Files:** `wifi.py`, `weather.py`
+**What happens:** `clock_view.py:12-13` defines `_SYNC_MS = 21_600_000` (6h) and `_RETRY_MS = 60_000` (60s). If NTP fails on boot (e.g., no network yet), the clock shows `--:--`. The render loop at `main.py:136-137` calls `clock_view.should_sync()` and `clock_view.sync()`, retrying every 60 seconds until NTP succeeds once.
 
-**Current behavior:** Both modules return `None` on failure, with no logged message to serial. Debugging requires attaching a serial console and waiting for the next `_render()` call.
+**Risk to experience:** 60-second retry means up to 1 minute of `--:--` on the clock after WiFi comes up, if the initial NTP call fails.
 
-**Recommendation:** Add debug output to `wifi.py` and `weather.py`:
-```python
-# wifi.py
-if not wlan.isconnected():
-    print("WiFi connection timeout after {}s".format(timeout))
-```
+**Files:** `clock_view.py:12-13, 59-61, 64-73`, `main.py:136-137`
 
-This helps diagnose network issues in the field when users don't have a serial connection.
+**Mitigation:** The retry cadence is intentional (D-36) to avoid tight-loop scheduler blocking. First sync typically succeeds within 1–2 attempts. The 6-hour re-sync window (D-35, updated 2026-07-18) avoids constant NTP queries and clock drift from local timekeeping.
 
 ---
 
-## Dependency on External APIs
+## Weather Retry Cadence
 
-**Problem:** Weather data is fetched from two external services: `ip-api.com` (geo) and `api.open-meteo.com` (weather).
+**Issue:** Weather data has a 60-second fast-retry cadence when cache is not "ok", and 10-minute normal refresh when cache is "ok".
 
-**Files:** `weather.py:6, 9`
+**What happens:** `weather_view.py:12-13` defines `_REFRESH_MS = 600_000` (10 min) and `_RETRY_MS = 60_000` (60s). If a weather fetch fails (WiFi down, API error), the next attempt is in 60 seconds. If it succeeds, the next refresh is in 10 minutes.
 
-**Risk:**
-- If either service is down, the device displays "no data" with no fallback.
-- Both services are free-tier, which may have rate limits or occasional downtime.
-- `ip-api.com` has a 45-request/minute rate limit on free tier. If `REFRESH_SECONDS=600`, that's 1 request per 10 min = ~144/day, safely under the limit.
+**Risk:** A persistent API outage (e.g., open-meteo down) will retry every 60 seconds. With multiple retries failing, this may accumulate network requests if the device is online but the API is not.
 
-**Mitigation in place:** Broad exception handling prevents crashes if APIs are down.
-
-**Future improvement:** Implement response caching so if both API calls fail, display the last successful data (with an age indicator like "2 hrs old") instead of "no data".
+**Mitigation:** The current behavior is intentional (WEATHER-09, documented in code). The `should_refresh()` logic at `weather_view.py:23-25` ensures failed fetches consume one retry window before trying again, preventing tight-looping. The `_cache_status` in `set_data()` at `weather_view.py:47-63` handles the distinction between WiFi failure ("no_wifi") and API failure ("no_data"), allowing the UI to display different messages.
 
 ---
 
-*Concerns audit: 2026-07-15*
+## Timezone Offset File Persistence
+
+**Issue:** `clock_view.py` persists timezone offset to `tz_offset.txt` on every weather fetch that returns a new offset.
+
+**What happens:** `clock_view.py:33-48` calls `set_tz_offset()` after each successful weather fetch. A flash wear-guard (line 41) only writes if the offset changes. For a stationary device with no DST transition, the file is written once on first boot and never again.
+
+**Risk:** If a device moves to a different timezone and the user doesn't update the offset manually, the clock will show the old timezone until the next weather fetch updates it. No UI mechanism exists to manually override the timezone offset.
+
+**Files:** `clock_view.py:14, 33-48`
+
+**Mitigation:** The wear-guard preserves flash longevity. Manual offset override is out of scope for current phase (no UI for it). The pattern matches D-43-bis (RAM-only storage for WAN IP, file-only for TZ offset).
+
+---
+
+## HTTP vs HTTPS Mixed Transport
+
+**Issue:** `bootstrap.py` uses HTTP for ip-api and HTTPS for open-meteo.
+
+**What happens:** `bootstrap.py:40` queries `http://ip-api.com/json/?fields=...` (unencrypted), and line 45-48 queries `https://api.open-meteo.com/v1/forecast` (encrypted). The WAN IP and timezone are transmitted in plaintext; weather data is encrypted.
+
+**Security posture:** This is not a vulnerability for the application's use case (weather and location are non-sensitive), but it reflects the available APIs. Both ip-api and open-meteo offer free tiers with HTTP and HTTPS endpoints, respectively. There is no token/auth mechanism for either service; the calls are anonymous.
+
+**Files:** `bootstrap.py:40, 45-48`
+
+**Mitigation:** Intended as-is. Switching to HTTPS for ip-api would incur extra bandwidth/latency for IP lookup; the cost/benefit doesn't justify it. No user PII is transmitted except the WAN IP address (which is inherent to any geolocation API call).
+
+---
+
+## Secrets File Management
+
+**Issue:** `secrets.py` contains WiFi credentials and is gitignored.
+
+**What happens:** `/Users/gnlc/Code/pico/.gitignore` (parent directory) ignores `display/secrets.py` and `display/tz_offset.txt`. The `main.py:37-46` entry point checks for ImportError and displays "missing secrets.py" if credentials are absent.
+
+**Risk:** If `secrets.py` is lost (device reset, file deletion), the app halts with a message on the screen and loops forever sleeping (line 45-46).
+
+**Files:** `/Users/gnlc/Code/pico/.gitignore` (parent), `main.py:37-46` (fallback)
+
+**Mitigation:** `secrets.py.example` is committed as a template for new devices. Users must copy it to `secrets.py` and fill in credentials before running. Current state is secure; secrets are not in git history.
+
+---
+
+## Cross-View State Coupling
+
+**Issue:** All view modules maintain module-level state (`_cached_*` globals) that is mutated by `main._refresh_all()`.
+
+**What happens:** `main.py:80-83` calls `set_data()`, `set_tz_offset()`, and `set_wan_ip()` to populate the views after a bootstrap fetch. Each view owns its cache state and render logic independently.
+
+**Risk:** If a new view is added without a corresponding setter in `main._refresh_all()`, it will render with stale/None data until the next fetch. No type signature or assertion enforces that setters are called.
+
+**Files:** `main.py:75-84` (composition root), `views/*.py:set_*()` functions
+
+**Mitigation:** The flat module namespace and simple composition are intentional for MicroPython's constraints (no abstract base classes, no typing). Adding a new view requires updating `main._refresh_all()` manually. This is low-risk for a three-view carousel; scalability is not a design goal.
+
+---
+
+## Phase Directory Naming Drift
+
+**Issue:** The directory `/Users/gnlc/Code/pico/display/Plans/02.1-location-label-+-fetch-retry` no longer describes the phase's actual scope.
+
+**What happens:** The phase was originally designed to add a location label and implement fetch retries. WEATHER-08 (location label) was dropped, narrowing the phase to retry-only. The directory name was not renamed to preserve git blame and commit history.
+
+**Risk:** Low. The phase is archived and not active. Future developers reading the directory structure may be confused about what work was actually done in that phase.
+
+**Files:** `/Users/gnlc/Code/pico/display/Plans/` (directory listing)
+
+**Mitigation:** Documented in project context at startup (this brief). The phase is closed; renaming would obscure git history. No action needed.
+
+---
+
+## CLAUDE.md and Codebase Map Stale Documentation
+
+**Issue:** `CLAUDE.md` and `.planning/codebase/` documentation refer to older module names and structures, even after recent refactors (2026-07-18 and 2026-07-19).
+
+**What happens:** Recent quick tasks moved `weather.py` + `wifi.py` into `bootstrap.py` and moved view modules into `views/` package. Documentation prose was patched for file paths but not rewritten wholesale, so some sections still carry historical language.
+
+**Risk:** Low, but confusing. New developers reading CLAUDE.md may expect separate `weather.py` and `wifi.py` files or views in the root directory.
+
+**Files:** `CLAUDE.md` (Technology Stack, Conventions sections mention old module names), `.planning/codebase/` (if present, similar issue)
+
+**Mitigation:** Not urgent. Path patches are correct; prose is descriptive of what *was* and includes current paths. A full rewrite of narrative sections would help but is not critical for functionality.
+
+---
+
+## Global State Management in Views
+
+**Issue:** All state in view modules is global and mutable, with no encapsulation.
+
+**What happens:** `weather_view.py`, `clock_view.py`, and `system_view.py` each define module-level variables like `_cached_temp`, `_synced`, etc., which are modified by setter functions (`set_data()`, `set_tz_offset()`, etc.). Render functions read these globals.
+
+**Risk:** Potential race condition if button IRQ handlers were to call view functions concurrently. However, MicroPython is single-threaded on Pico W, so actual risk is nil. If true async/await support were added, this would break. Also, testing view logic in isolation requires mocking module globals.
+
+**Files:** `views/*.py` (all three view modules)
+
+**Mitigation:** Single-threaded event loop guarantees no concurrency issues. Module-level globals are idiomatic in MicroPython for embedded/performance-critical code. Testability is limited by MicroPython's design constraints (no native test framework on device). Current approach is acceptable for scope.
+
+---
+
+## Summary
+
+**Critical:** SH1107 driver gotchas (4) — highly load-bearing, well-documented but fragile to unintended changes.
+
+**High:** IP-API field parameter — single point of failure, already caused a bug in earlier phase.
+
+**Medium:** Boot WiFi timeout, NTP retry cadence, memory allocation patterns — all acceptable given MicroPython constraints, documented with mitigation.
+
+**Low:** Documentation drift, global state idiom, missing timezone override UI — known, acceptable for scope, not blocking.
+
+---
+
+*Concerns audit: 2026-07-19*

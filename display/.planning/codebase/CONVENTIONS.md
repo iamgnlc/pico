@@ -1,142 +1,191 @@
 # Coding Conventions
 
-**Analysis Date:** 2026-07-15
+**Analysis Date:** 2026-07-19
 
 ## Naming Patterns
 
 **Files:**
-- Module names use `snake_case`: `sh1107.py`, `text_render.py`, `weather.py`, `wifi.py`, `icons.py`, `main.py`
-- No file extensions beyond `.py`
+- `snake_case` for all modules: `sh1107.py`, `bootstrap.py`, `text_render.py`, `icons.py`, `main.py`
+- View modules grouped in `views/` directory: `weather_view.py`, `clock_view.py`, `system_view.py`
+- No file extension except `.py`
 
 **Functions:**
-- Use `snake_case` for all functions: `_center_text()`, `_render()`, `connect()`, `current()`
-- Private/internal functions prefixed with single underscore: `_init()`, `_cmd()`, `_kind()`, `_sun()`, `_moon()`, `_cloud()`, `_rain()`, `_snow()`, `_thunder()`, `_fog()`, `_center_text()`, `_render()`
-- Public functions have no prefix: `draw()`, `text()`, `connect()`, `current()`
+- `snake_case` for all functions
+- Public functions: no prefix. Examples: `draw()` in `icons.py:73`, `fetch()` in `bootstrap.py:18`, `text()` in `text_render.py:4`
+- Private/internal functions: single underscore prefix. Examples: `_init()` in `sh1107.py:39`, `_center_text()` in `main.py:31`, `_kind()` in `icons.py:1`, `_rssi_to_bars()` in `system_view.py:21`
 
 **Variables:**
-- Use `snake_case` for all variables: `WIFI_SSID`, `REFRESH_SECONDS`, `x_center`, `y_center`, `temp`, `code`, `is_day`
-- Lowercase for local variables: `w`, `h`, `buf`, `rot_buf`, `col`, `byte`, `dx`, `dy`, `cx`, `cy`
+- `snake_case` for all variables
+- Module-level state: lowercase prefix. Examples: `_cached_temp` in `weather_view.py:7`, `_last_refresh_ms` in `weather_view.py:14`, `_pending_dir` in `main.py:25`
+- Local loop variables: single letter or short. Examples: `w`, `h`, `x`, `y`, `cx`, `cy`, `buf`, `col`, `byte` in framebuffer operations
 
-**Types/Classes:**
-- Use `PascalCase` for class names: `OLED` (subclasses `framebuf.FrameBuffer`)
-- Module-level constants use `UPPER_SNAKE_CASE`: `WIDTH`, `HEIGHT`, `WIFI_SSID`, `WIFI_PASSWORD`, `REFRESH_SECONDS`, `ROTATE`
-- Private module constants prefixed with underscore: `_DC`, `_CS`, `_SCK`, `_MOSI`, `_RST`
+**Constants:**
+- `UPPER_SNAKE_CASE` for module-level constants
+- Public module constants exported from driver: `WIDTH`, `HEIGHT` in `sh1107.py:13-14`
+- User-tunable constants grouped at top of `main.py:8-11`: `REFRESH_SECONDS`, `ROTATE`
+- Hardware/private constants prefixed with underscore: `_DC`, `_CS`, `_SCK`, `_MOSI`, `_RST` in `sh1107.py:7-11`
+- Internal timing constants: `_POLL_MS`, `_DEBOUNCE_MS` in `main.py:14-15`; `_REFRESH_MS`, `_RETRY_MS` in `weather_view.py:12-13`
+- Numeric constants with underscores for readability: `20_000_000` (SPI clock) in `sh1107.py:25`, `600_000` (milliseconds) in `weather_view.py:12`
+
+**Classes:**
+- `PascalCase` for class names: `OLED` in `sh1107.py:17`
+- `OLED` subclasses `framebuf.FrameBuffer` to inherit drawing methods
+
+**Type & Tag Conventions:**
+- No type hints anywhere (MicroPython embedded idiom for performance)
+- No docstrings (performance-critical embedded code)
+- Module constants use `micropython.const()` in `sh1107.py:2` for compile-time optimization of frequently-accessed pin values
 
 ## Code Style
 
 **Formatting:**
-- No explicit formatter configured (typical MicroPython idiom)
-- 4-space indentation (observed throughout)
-- Line breaks used sparingly; some method calls chained inline: `self.rst(1); time.sleep_ms(1)`
-- String concatenation via `.format()` for readability: `"{:.0f}C".format(temp)`
+- 4-space indentation consistently throughout
+- No explicit formatter configured; follows idiomatic MicroPython conventions
+- String formatting via `.format()` for readability: `"{:.0f}C".format(temp)` in `weather_view.py:38`, `"{:02d}:{:02d}".format(t[3], t[4])` in `clock_view.py:81`
+- Inline method chaining used sparingly: `self.rst(1); time.sleep_ms(1)` in `sh1107.py:40-41`
 
 **Linting:**
-- No linter detected; code assumes MicroPython interpreter compatibility
-- MicroPython idiom: no type hints anywhere in codebase
-- Uses `micropython.const()` for compile-time constants on performance-critical values: `_DC = const(8)`
+- No linter configured (MicroPython idiom)
+- Code assumes MicroPython interpreter compatibility
+- Module organization relies on import correctness rather than static analysis
 
 ## Import Organization
 
-**Order:**
-1. Standard library imports (machine, network, framebuf, time)
-2. Third-party imports (urequests, micropython)
-3. Local imports (relative imports of project modules)
+**Standard Order (observed across codebase):**
+1. Machine/stdlib imports (hardware + low-level): `from machine import Pin, SPI` in `sh1107.py:1`, `import network` in `bootstrap.py:1`
+2. MicroPython extensions: `from micropython import const` in `sh1107.py:2`
+3. Framebuffer/stdlib abstractions: `import framebuf` in `sh1107.py:3`
+4. Timing: `import time` in `sh1107.py:4`
+5. Network/HTTP: `import urequests` in `bootstrap.py:3`
+6. Local driver imports: `from sh1107 import OLED, WIDTH, HEIGHT` in `main.py:1`
+7. Local view modules: `from views import weather_view, clock_view, system_view` in `main.py:3`
+8. Other local modules: `import text_render` in `main.py:4`, `import bootstrap` in `main.py:5`
 
-**Examples:**
-- `sh1107.py`: `from machine import Pin, SPI` → `from micropython import const` → `import framebuf` → `import time`
-- `main.py`: `from sh1107 import OLED, WIDTH, HEIGHT` → `import wifi` → `import weather` → `import icons` → `import text_render` → `import time`
-- `text_render.py`: `import framebuf`
-- `weather.py`: `import urequests`
-- `wifi.py`: `import network` → `import time`
+**Path Aliases:**
+- No path aliases used; flat module namespace suitable for embedded constraints
+- All imports are relative to the Pico's `/` filesystem root
 
-**No path aliases used** — imports are direct module names or explicit from-imports.
+**Lazy Imports:**
+- Used strategically to defer errors: `import secrets` inside `bootstrap.fetch()` (line 30) instead of at module level, to allow `main.py` to display the "missing secrets.py" fallback screen before crashing
 
 ## Error Handling
 
-**Pattern:**
-- Bare `except Exception:` blocks for network/API calls where graceful degradation is needed
-- Example in `weather.py`: `except Exception: return None, None, None`
-- Example in `main.py`: checks for `None` return values to display fallback UI ("no wifi", "no data")
-- No explicit error logging; failures are silent with UI fallback
+**Patterns:**
+- Bare `except Exception:` blocks used for graceful API/network degradation
+- No exception re-raising; all failures result in fallback values or silent continuation
+
+**Specific Patterns:**
+
+**Network/API Failures (`bootstrap.py:36-54`):**
+```python
+try:
+    r = urequests.get("...")
+    loc = r.json()
+    ...
+except Exception:
+    return ip, None, None, None, None, None
+```
+- Returns tuple with partial state: `(ip, None, None, None, None, None)` when API fails but WiFi succeeded
+- Caller distinguishes "no_wifi" (ip=None) from "no_data" (ip!=None, temp=None) via cache state
+
+**NTP Sync Failures (`clock_view.py:69-73`):**
+```python
+try:
+    ntptime.settime()
+    _synced = True
+except Exception:
+    pass
+```
+- Sets timestamp guard _last_sync_ms at entry (line 68) so failed attempts don't tight-loop
+- Boolean _synced remains False; render() displays fallback "--:--"
+
+**File I/O Failures (`clock_view.py:44-48`):**
+```python
+try:
+    with open(_TZ_OFFSET_FILE, "w") as f:
+        f.write(str(offset))
+except Exception:
+    pass
+```
+- Best-effort persistence; write failures are silent (no repeated attempts)
+
+**WiFi Connection Timeout (`bootstrap.py:6-15`):**
+- Explicit loop with `timeout` parameter (default 20 seconds)
+- Returns `None` if connection fails; caller handles gracefully
 
 ## Logging
 
-**Framework:** `None` — no logging framework used
+**Framework:** Not used; state is communicated via display rendering only
 
-**Patterns:**
-- Console output via print not used; state communicated via UI display
-- Debug happens via Thonny or `mpremote` execution observation
+**Debug Approach:**
+- Interactive via Thonny IDE or `mpremote run` observation
+- No persistent logging due to embedded constraints
+- State communicated to user via UI: "connecting...", "no wifi", "no data", "--:--" (when unsynced), "IP: --" (when offline)
 
 ## Comments
 
 **When to Comment:**
-- Inline comments placed near hardware/protocol traps: "SH1107 needs CS toggled around every data byte" in `sh1107.py:83-84`
-- Comments for non-obvious control flow: "SPI first, DC after — GP8 is SPI1's default MISO" in `sh1107.py:22-24`
-- Comments for register initialization explaining bit semantics: "display off", "column addr", "page addr" inline in init sequence in `sh1107.py:45-61`
-- No docstrings anywhere (MicroPython idiom for embedded/performance-critical code)
-- Comments summarize intent, not implementation
+- Hardware/protocol traps: "SH1107 needs CS toggled around every data byte" in `sh1107.py:83-84`
+- Non-obvious control flow: "SPI first, DC after — GP8 is SPI1's default MISO" in `sh1107.py:22-24`
+- API quirks: "ip-api's default response omits offset and query; request both explicitly" in `bootstrap.py:37-39`
+- Timing/scheduling semantics: "Stamp at start so transient failures don't tight-loop" in `weather_view.py:49-50` and `clock_view.py:66-67`
+- Architectural decisions: "Composition-root fan-out" in `main.py:76-79`; "Pure state-setter driven by main._refresh_all" in `weather_view.py:46`
+
+**What NOT to Comment:**
+- Implementation details visible in code (e.g., "increment x" before `x += 1`)
+- Self-documenting function names and variable names
+- Loop mechanics in standard patterns
 
 **JSDoc/TSDoc:**
-- Not used; MicroPython does not use type annotations or docstring generation
+- Not used (MicroPython embedded idiom)
 
 ## Function Design
 
-**Size:**
-- Small, focused functions: `_center_text()` is 3 lines, `_render()` is 13 lines
-- Drawing functions are typically 2–5 lines of ellipse/line/rect calls
-- Private helper functions extracted: `_kind()` maps weather code to icon type before lookup
+**Size:** Small, focused functions optimizing for readability and reusability
+- Drawing helpers: 2–5 lines of framebuffer calls. Examples: `_sun()` in `icons.py:17-22` (6 lines), `_moon()` in `icons.py:25-28` (4 lines), `_cloud()` in `icons.py:31-35` (5 lines)
+- Orchestration: 10–15 lines. Examples: `_refresh_all()` in `main.py:75-85` (11 lines), `render()` in `weather_view.py:28-43` (16 lines)
+- Driver methods: 2–30 lines. Example: `show()` in `sh1107.py:65-90` (26 lines)
 
 **Parameters:**
-- Positional parameters used; no keyword defaults except in public APIs
+- Positional-only for internal functions (performance, clarity in embedded context)
+- Keyword defaults used only for public APIs: `scale=1` in `text_render.py:4` and `_center_text()` implementations
 - Example: `text(fb, s, x, y, scale=1, color=1)` in `text_render.py:4`
-- Internal helpers use positional-only: `_center_text(oled, s, x_center, y_center, scale=1)`
 
 **Return Values:**
-- Functions return None implicitly (no return statement) when mutating state: `show()`, `_cmd()`, `draw()`
-- Functions return computed values: `current()` returns tuple `(temp, code, is_day)` or `(None, None, None)`
-- Single-purpose functions return a single value or None
+- Implicit None (no return statement) when mutating framebuffer or state: `show()`, `_cmd()`, `draw()`, `set_data()`, `set_tz_offset()`, `sync()`
+- Computed single values for query functions: `should_refresh()` returns bool in `weather_view.py:23`, `_rssi_to_bars()` returns int in `system_view.py:21`
+- Tuples for bootstrap round-trips: `fetch()` returns 6-tuple in `bootstrap.py:18`, `(ip, temp, code, is_day, tz_offset, wan_ip)`
+
+**Helpers Extracted:**
+- `_kind(code, is_day)` in `icons.py:1` maps WMO code to drawable kind before dispatcher lookup
+- `_center_text()` duplicated across view modules (intentional; avoids circular imports between views)
+- `_draw_bars()` in `system_view.py:9` for RSSI visualization
 
 ## Module Design
 
 **Exports:**
-- `sh1107.py` exports: `OLED` class, `WIDTH` const, `HEIGHT` const
-- `main.py` exports: `__main__` block (entry point)
-- `text_render.py` exports: `text()` function (imported in main)
-- `weather.py` exports: `current()` function (imported in main)
-- `wifi.py` exports: `connect()` function (imported in main)
-- `icons.py` exports: `draw()` function (imported in main)
+- `sh1107.py`: `OLED` class, `WIDTH` const, `HEIGHT` const (imported in `main.py:1`)
+- `bootstrap.py`: `fetch()` function (imported and called in `main.py:80`)
+- `text_render.py`: `text()` function (imported in all view modules)
+- `icons.py`: `draw()` function (imported in `weather_view.py:2`)
+- View modules: `render()`, `set_data()` (or equivalent setter), `should_refresh()` (or equivalent guard)
+- No barrel files or re-export pattern
 
-**Barrel Files:**
-- Not used; each module has a single purpose and no re-export pattern
+**Module-Level State:**
+- `sh1107.OLED.__init__` initializes hardware once; instance stored in `main.py:88`
+- Each view module owns its private cache: `_cached_temp`, `_cache_status` in `weather_view.py`; `_synced`, `_cached_tz_offset` in `clock_view.py`; `_cached_wan_ip` in `system_view.py`
+- No cross-view imports; `main.py` fans out to all views via function calls
 
-**Module-Level Constants Placement:**
-- User config constants placed at top of `main.py` (lines 8–12): `WIFI_SSID`, `WIFI_PASSWORD`, `REFRESH_SECONDS`, `ROTATE`
-- Hardware pins defined at top of `sh1107.py` (lines 6–14): `_DC`, `_CS`, `_SCK`, `_MOSI`, `_RST`, `WIDTH`, `HEIGHT`
-- Hardware constants use `const()` for MicroPython optimization
-- This placement allows editing without modifying function bodies
+**User Configuration:**
+- Top of `main.py:8-11`: `REFRESH_SECONDS = 600`, `ROTATE = True`
+- Tunable without modifying function bodies
+- `secrets.py` (gitignored) contains `WIFI_SSID`, `WIFI_PASSWORD` imported in `bootstrap.fetch()`
 
-**Framebuf Method Reuse:**
-- `OLED` subclasses `framebuf.FrameBuffer` (line 17 in `sh1107.py`) to inherit `text()`, `fill()`, `pixel()`, `rect()`, `line()`, `ellipse()`, `fill_rect()`, `hline()`, `vline()` methods
-- Callers in `main.py` and `icons.py` use these methods directly on the `OLED` instance or temporary `FrameBuffer` objects
-- Example: `text_render.py` creates a temporary `FrameBuffer` to render text at scale, then reads pixels and renders them scaled on the target framebuffer
-
-## Code Patterns
-
-**Rotation Handling:**
-- Rotation implemented via pixel-level read/write (framebuf method calls) not buffer-byte manipulation
-- Explained in `sh1107.py:66-73`: iterate over all pixels, if set, write to rotated coordinates in new buffer
-- This avoids the GDDRAM wrap issue documented in CLAUDE.md
-
-**Display Initialization:**
-- Register sequence in `sh1107.py:44-63` grouped by function (display control, addressing, contrast, etc.)
-- Single-byte commands like `0x21` are not followed by data bytes (hardware limitation documented in CLAUDE.md)
-- Reset toggle with explicit timing: `rst(1)` → sleep 1ms → `rst(0)` → sleep 10ms → `rst(1)` → sleep 10ms
-
-**Weather Icon Dispatch:**
-- `icons.py` uses a dictionary `_DRAWERS` mapping kind names to drawing functions (lines 62–70)
-- `draw()` function maps weather code to kind via `_kind()`, then looks up function and calls it
-- Clean separation: code-to-kind logic separate from rendering
+**Hardware Configuration:**
+- Top of `sh1107.py:6-14`: Pin definitions (`_DC`, `_CS`, `_SCK`, `_MOSI`, `_RST`), display size (`WIDTH`, `HEIGHT`)
+- Fixed by HAT header; do not attempt to move pins
+- Wrapped in `micropython.const()` for performance
 
 ---
 
-*Convention analysis: 2026-07-15*
+*Convention analysis: 2026-07-19*
