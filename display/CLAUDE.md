@@ -160,10 +160,10 @@ A MicroPython app for a Raspberry Pi Pico W driving a Waveshare Pico-OLED-1.3 HA
 ## Import Organization
 
 - `sh1107.py`: `from machine import Pin, SPI` → `from micropython import const` → `import framebuf` → `import time`
-- `main.py`: `from sh1107 import OLED, WIDTH, HEIGHT` → `from machine import Pin` → `from views import weather_view, clock_view, system_view` → `import text_render` → `import time`
+- `main.py`: `from sh1107 import OLED, WIDTH, HEIGHT` → `from machine import Pin` → `from views import weather_view, clock_view, system_view` → `import text_render` → `import bootstrap` → `import time`
 - `text_render.py`: `import framebuf`
 - `bootstrap.py`: `import network` → `import time` → `import urequests`
-- `views/weather_view.py`: `from sh1107 import WIDTH, HEIGHT` → `import bootstrap` → `from views import clock_view, system_view` → `import icons` → `import text_render` → `import time`
+- `views/weather_view.py`: `from sh1107 import WIDTH, HEIGHT` → `import icons` → `import text_render` → `import time`
 
 ## Error Handling
 
@@ -244,7 +244,7 @@ A MicroPython app for a Raspberry Pi Pico W driving a Waveshare Pico-OLED-1.3 HA
 | Component | Responsibility | File |
 |-----------|----------------|------|
 | OLED Driver | Hardware initialization, SPI comms, framebuffer→GDDRAM transfer, power management | `sh1107.py` |
-| Application | User configuration, UI rendering loop, weather fetch orchestration | `main.py` |
+| Application | User configuration, UI rendering loop, composition-root fetch fan-out (`_refresh_all`) | `main.py` |
 | Bootstrap | WiFi connect + ip-api geolocation (lat/lon/offset/query) + Open-Meteo weather, JSON parsing, unified 6-tuple return | `bootstrap.py` |
 | Icons | Weather condition → visual rendering (sun/moon/cloud/rain/snow/thunder/fog) | `icons.py` |
 | Text Render | Font scaling via double-buffer framebuf technique | `text_render.py` |

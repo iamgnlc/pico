@@ -88,6 +88,7 @@ Recent decisions affecting current work:
 - Phase 4 (D-43-bis): IP field = WAN IP (public), sourced from ip-api's `query` field via extended `weather.current()` 5-tuple; cached RAM-only in `system_view._cached_wan_ip`; shows `--` when either offline OR cache is None.
 - Phase 4 (D-44): Offline UX = uniform `--` for all three fields (SSID, IP, empty bars). No last-known SSID with `(offline)` marker.
 - Phase 4 (D-45): System view is READ-ONLY — no reconnect attempts. Relies on `weather_view.refresh`'s existing 1-min retry / 10-min normal cadence.
+- Cross-phase (2026-07-19, quick 260719-f0b): Cross-view setter dispatch moved out of weather_view.refresh into main._refresh_all. weather_view.refresh(oled) removed; replaced by weather_view.set_data(ip, temp, code, is_day) — a pure state-setter with no oled parameter and no cross-view calls. main.py now imports bootstrap and owns the boot + scheduler-tick fan-out to weather_view.set_data + clock_view.set_tz_offset + system_view.set_wan_ip + weather_view.render. bootstrap.py unchanged.
 
 ### Pending Todos
 
@@ -112,6 +113,7 @@ None yet.
 | 260718-remove-spinner-tune-cadence | Retire D-23 spinner + update D-35 NTP cadence to 6h | 2026-07-18 | `93064bd` | [260718-remove-spinner-tune-cadence](./quick/260718-remove-spinner-tune-cadence/) |
 | 260718-rename-bootstrap | Rename weather.py → bootstrap.py; absorb wifi.connect into a private helper; 6-tuple fetch() | 2026-07-18 | `bb2d763` | [260718-rename-bootstrap](./quick/260718-rename-bootstrap/) |
 | 260719-e5g | Move view modules (weather_view/clock_view/system_view) into `views/` package | 2026-07-19 | `dcb4470` | [260719-e5g-move-view-modules-to-views-subdirectory](./quick/260719-e5g-move-view-modules-to-views-subdirectory/) |
+| 260719-f0b | Decouple weather_view from sibling views; move cross-view setter dispatch to main._refresh_all | 2026-07-19 | — | [260719-f0b-decouple-weather-view-from-sibling-views](./quick/260719-f0b-decouple-weather-view-from-sibling-views/) |
 
 ## Session Continuity
 
