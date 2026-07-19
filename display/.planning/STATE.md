@@ -7,8 +7,8 @@ previous_milestone_tag: v1.0
 previous_milestone_archived_at: "2026-07-18T20:15:00.000Z"
 status: milestone_archived
 stopped_at: v1.0 archived and tagged (fold-into-v1.0 packaging). Ready for /gsd:new-milestone when the operator wants to scope v1.1 or v2.
-last_updated: "2026-07-18T20:15:00.000Z"
-last_activity: 2026-07-18
+last_updated: "2026-07-19T09:20:00.000Z"
+last_activity: 2026-07-19
 progress:
   total_phases: 0
   completed_phases: 0
@@ -111,9 +111,10 @@ None yet.
 | 260718-scope-cleanup-phase-2.1 | Narrow Phase 2.1 scope to retry-only after Plan 02.1-01 revert | 2026-07-18 | — | [260718-scope-cleanup-phase-2.1](./quick/260718-scope-cleanup-phase-2.1/) |
 | 260718-remove-spinner-tune-cadence | Retire D-23 spinner + update D-35 NTP cadence to 6h | 2026-07-18 | `93064bd` | [260718-remove-spinner-tune-cadence](./quick/260718-remove-spinner-tune-cadence/) |
 | 260718-rename-bootstrap | Rename weather.py → bootstrap.py; absorb wifi.connect into a private helper; 6-tuple fetch() | 2026-07-18 | `bb2d763` | [260718-rename-bootstrap](./quick/260718-rename-bootstrap/) |
+| 260719-e5g | Move view modules (weather_view/clock_view/system_view) into `views/` package | 2026-07-19 | `dcb4470` | [260719-e5g-move-view-modules-to-views-subdirectory](./quick/260719-e5g-move-view-modules-to-views-subdirectory/) |
 
 ## Session Continuity
 
-Last session: 2026-07-18T20:15:00Z
-Stopped at: v1.0 milestone archived and git-tagged (packaging option A — refactor folded in). ROADMAP.md collapsed to milestone-history table; REQUIREMENTS.md moved into milestones/v1.0-REQUIREMENTS.md; PROJECT.md gained "Current State" + "Next Milestone Goals" sections with the v1 context wrapped in `<details>`. Ready for `/gsd:new-milestone` when the operator wants to begin v1.1 or v2 scoping.
+Last session: 2026-07-19T09:20:00Z
+Stopped at: Completed quick task 260719-e5g — moved the three view modules into a `views/` package (git mv preserved history; imports rewritten; CLAUDE.md path references patched). Operator to `mpremote cp -r views/ ...` for on-device verification. Still between milestones — `/gsd:new-milestone` remains the natural next command.
 Resume file: n/a — between milestones. `/gsd:new-milestone` is the natural next command.
