@@ -136,7 +136,7 @@ A MicroPython app for a Raspberry Pi Pico W driving a Waveshare Pico-OLED-1.3 HA
 
 ## Naming Patterns
 
-- Module names use `snake_case`: `sh1107.py`, `text_render.py`, `bootstrap.py`, `icons.py`, `main.py`, plus the view modules `weather_view.py`, `clock_view.py`, `system_view.py`
+- Module names use `snake_case`: `sh1107.py`, `text_render.py`, `bootstrap.py`, `icons.py`, `main.py`, plus the view modules `views/weather_view.py`, `views/clock_view.py`, `views/system_view.py`
 - No file extensions beyond `.py`
 - Use `snake_case` for all functions: `_center_text()`, `_render()`, `connect()`, `current()`
 - Private/internal functions prefixed with single underscore: `_init()`, `_cmd()`, `_kind()`, `_sun()`, `_moon()`, `_cloud()`, `_rain()`, `_snow()`, `_thunder()`, `_fog()`, `_center_text()`, `_render()`
@@ -160,10 +160,10 @@ A MicroPython app for a Raspberry Pi Pico W driving a Waveshare Pico-OLED-1.3 HA
 ## Import Organization
 
 - `sh1107.py`: `from machine import Pin, SPI` → `from micropython import const` → `import framebuf` → `import time`
-- `main.py`: `from sh1107 import OLED, WIDTH, HEIGHT` → `from machine import Pin` → `import weather_view` → `import clock_view` → `import system_view` → `import text_render` → `import time`
+- `main.py`: `from sh1107 import OLED, WIDTH, HEIGHT` → `from machine import Pin` → `from views import weather_view, clock_view, system_view` → `import text_render` → `import time`
 - `text_render.py`: `import framebuf`
 - `bootstrap.py`: `import network` → `import time` → `import urequests`
-- `weather_view.py`: `from sh1107 import WIDTH, HEIGHT` → `import bootstrap` → `import clock_view` → `import system_view` → `import icons` → `import text_render` → `import time`
+- `views/weather_view.py`: `from sh1107 import WIDTH, HEIGHT` → `import bootstrap` → `from views import clock_view, system_view` → `import icons` → `import text_render` → `import time`
 
 ## Error Handling
 
