@@ -29,7 +29,7 @@ def _rssi_to_bars(rssi):
 
 
 def set_wan_ip(ip):
-    # Public setter called by weather_view.refresh after each successful weather
+    # Public setter called by main._refresh_all after each successful weather
     # fetch. Idempotent guard: skip on None (failed fetches) and on unchanged
     # value. RAM-only — no file persistence (D-43-bis).
     global _cached_wan_ip

@@ -31,7 +31,7 @@ def _center_text(oled, s, x_center, y_center, scale=1):
 
 
 def set_tz_offset(offset):
-    # Public setter called by weather_view.refresh after each successful
+    # Public setter called by main._refresh_all after each successful
     # weather fetch. Flash-wear guard: only writes when the fetched offset
     # differs from the cached value. Stationary device with no DST writes
     # the file once ever (first fetch of first-ever boot).

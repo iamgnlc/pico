@@ -2,6 +2,7 @@ from sh1107 import OLED, WIDTH, HEIGHT
 from machine import Pin
 from views import weather_view, clock_view, system_view
 import text_render
+import bootstrap
 import time
 
 # ---- user config -----------------------------------------------------------
@@ -71,6 +72,18 @@ def _draw_page_dots(oled, current_idx):
         oled.ellipse(cx, 60, 2, 2, 1, i == current_idx)
 
 
+def _refresh_all(oled):
+    # Composition-root fan-out: bootstrap fetches once; each view's public
+    # setter absorbs its field. weather_view then paints the panel. main
+    # overlays the current view before the final show() at each call site
+    # (see boot-fetch and scheduler-tick blocks below).
+    ip, temp, code, is_day, tz_offset, wan_ip = bootstrap.fetch()
+    weather_view.set_data(ip, temp, code, is_day)
+    clock_view.set_tz_offset(tz_offset)
+    system_view.set_wan_ip(wan_ip)
+    weather_view.render(oled)
+
+
 if __name__ == "__main__":
     oled = OLED(rotate=ROTATE)
 
@@ -92,7 +105,7 @@ if __name__ == "__main__":
     # Initial boot fetch. Blocking (up to ~20s on wifi timeout); presses during
     # this window are still captured by the IRQ handlers into _pending_dir and
     # dispatched immediately after this returns.
-    weather_view.refresh(oled)
+    _refresh_all(oled)
     _draw_page_dots(oled, _current_idx)
     oled.show()
 
@@ -109,7 +122,7 @@ if __name__ == "__main__":
             _draw_page_dots(oled, _current_idx)
             oled.show()
         if weather_view.should_refresh(now):
-            weather_view.refresh(oled)
+            _refresh_all(oled)
             # Refresh's final render draws Weather content. If the user is on
             # Clock or System, overpaint with the current view so the visible
             # panel matches _current_idx.

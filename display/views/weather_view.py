@@ -1,6 +1,4 @@
 from sh1107 import WIDTH, HEIGHT
-import bootstrap
-from views import clock_view, system_view
 import icons
 import text_render
 import time
@@ -45,26 +43,21 @@ def render(oled):
         oled.ellipse(cx, cy, 2, 2, 1, False)
 
 
-def refresh(oled):
+# Pure state-setter driven by main._refresh_all; no render, no cross-view calls.
+def set_data(ip, temp, code, is_day):
     global _cached_temp, _cached_code, _cached_is_day, _cache_status, _last_refresh_ms
     # Stamp at start so transient failures don't tight-loop the scheduler —
     # a failed fetch still consumes one _REFRESH_MS window before the next try.
     _last_refresh_ms = time.ticks_ms()
 
-    ip, temp, code, is_day, tz_offset, wan_ip = bootstrap.fetch()
     if not ip:
         _cache_status = "no_wifi"
-        render(oled)
         return
     if temp is None:
         _cache_status = "no_data"
-        render(oled)
         return
 
     _cached_temp = temp
     _cached_code = code
     _cached_is_day = is_day
     _cache_status = "ok"
-    clock_view.set_tz_offset(tz_offset)
-    system_view.set_wan_ip(wan_ip)
-    render(oled)
