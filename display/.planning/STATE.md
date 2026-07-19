@@ -7,7 +7,7 @@ previous_milestone_tag: v1.0
 previous_milestone_archived_at: "2026-07-18T20:15:00.000Z"
 status: milestone_archived
 stopped_at: v1.0 archived and tagged (fold-into-v1.0 packaging). Ready for /gsd:new-milestone when the operator wants to scope v1.1 or v2.
-last_updated: "2026-07-19T15:35:00.000Z"
+last_updated: "2026-07-19T15:55:00.000Z"
 last_activity: 2026-07-19
 progress:
   total_phases: 0
@@ -118,6 +118,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-19T15:35:00Z
-Stopped at: Completed quick task 260719-n1b — added a BOOTSEL short-press hard reset. `main.py` now polls `rp2.bootsel_button()` as the first statement of each scheduler tick and calls `machine.reset()` on any detected press. Zero debounce, allocation-free, inherits `_POLL_MS = 100` cadence — respects D-13/14/15 (no asyncio, no `machine.Timer`, no dedicated IRQ). Operator to `mpremote cp main.py :` and press BOOTSEL on-device to smoke-test the reboot behaviour.
+Last session: 2026-07-19T15:55:00Z
+Stopped at: Completed quick task 260719-n1b — BOOTSEL short-press hard reset in `main.py`. On-device smoke test surfaced a boot-ROM mode-selection trap: BOOTSEL is dual-purpose (readable at runtime via `rp2.bootsel_button()`, ALSO checked by the boot ROM at reset time), so if the button was still held when `machine.reset()` fired the Pico diverted into USB mass-storage mode instead of rebooting into `main.py`. Follow-up fix `b678517` adds a `while rp2.bootsel_button(): pass` release-wait before `reset()` — preserves the "any press = hard reset" semantics from n1b, not a debounce, boot-ROM-mode avoidance only. Operator to re-flash `main.py` and re-test.
 Resume file: n/a — between milestones. `/gsd:new-milestone` is the natural next command.
