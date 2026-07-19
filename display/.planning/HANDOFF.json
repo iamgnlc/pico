@@ -1,103 +1,96 @@
 {
   "version": "1.0",
-  "timestamp": "2026-07-18T20:30:00Z",
+  "timestamp": "2026-07-19T10:05:52.408Z",
   "phase": null,
-  "phase_name": "between milestones — v1.0 shipped and pushed, v2 not yet scoped",
+  "phase_name": "between milestones — v1.0 shipped, v2 not yet scoped; three cross-phase quick tasks completed this session",
   "phase_dir": null,
-  "status": "milestone_archived_and_pushed",
-  "position": "v1.0 milestone complete: archived to .planning/milestones/, tagged, and pushed to origin/main. 24 of 24 v1 requirements delivered. No active work; awaiting operator decision on v1.1 vs v2 scoping.",
+  "status": "paused_between_milestones",
+  "position": "v1.0 milestone complete. Session added three cross-phase quick tasks (260719-e5g views/ package move, 260719-f0b weather_view sibling decouple, codebase-map refresh). Working tree clean; awaiting operator decision on v1.1 vs v2 scoping.",
   "completed_this_session": [
     {
-      "item": "Full v1.0 milestone delivered (5 phases, 10 plans, 24 requirements) — see prior HANDOFF.json entries for phase-by-phase detail",
-      "commits": "See tag v1.0 and git log a20bb0e..3eaa78c for the closure lineage"
-    },
-    {
-      "item": "Cross-phase refactor: rename weather.py → bootstrap.py, absorb wifi.py into private helper, consolidate to 6-tuple bootstrap.fetch()",
+      "item": "Quick 260719-e5g — moved view modules into views/ package (git mv preserved history; imports rewritten to `from views import ...`; CLAUDE.md path references patched)",
       "commits": [
-        "bb2d763 refactor: rename weather.py → bootstrap.py; consolidate wifi.connect into fetch()",
-        "a20bb0e docs(quick-260718-rename-bootstrap): PROJECT + CLAUDE patches; PLAN + SUMMARY; STATE update"
+        "7875740 refactor(260719-e5g): move view modules to views/ package (T-1)",
+        "bc87b17 refactor(260719-e5g): rewrite imports to from-views form (T-2)",
+        "dcb4470 docs(260719-e5g): update CLAUDE.md path references (T-3)",
+        "f64a185 docs(quick-260719-e5g): move view modules to views/ subdirectory"
       ]
     },
     {
-      "item": "v1.0 milestone archive + tag",
+      "item": "Quick 260719-f0b — decoupled views/weather_view.py from siblings; replaced refresh(oled) with pure set_data(ip,temp,code,is_day) state-setter; moved cross-view fan-out (clock_view.set_tz_offset + system_view.set_wan_ip) into main._refresh_all(oled). bootstrap.py byte-identical.",
       "commits": [
-        "3eaa78c chore: archive v1.0 milestone"
-      ],
-      "tag": "v1.0 (annotated) at 3eaa78c"
+        "c78b12c refactor(260719-f0b): move cross-view dispatch from weather_view to main._refresh_all",
+        "1b47637 docs(260719-f0b): patch CLAUDE.md import bullets + component table; record decision in STATE.md",
+        "a4ec428 docs(quick-260719-f0b): plan + summary + STATE fixups"
+      ]
     },
     {
-      "item": "Pushed to origin",
-      "detail": "56 commits + v1.0 tag pushed to https://github.com/iamgnlc/pico (17f0c5d..3eaa78c on main)"
+      "item": "Codebase map refresh — regenerated all 7 .planning/codebase/*.md docs against current on-disk source (bootstrap.py + views/ package + main._refresh_all fan-out). Resolves the stale-doc tech debt flagged in the prior .continue-here.md.",
+      "commits": [
+        "816ddcd docs(codebase): refresh codebase map after bootstrap + views refactors"
+      ]
     }
   ],
-  "requirements_delivered": [
-    "All 24 v1 requirements: SEC-01/02/03, NAV-01..06, WEATHER-01..05, WEATHER-09, CLOCK-01..05, SYSTEM-01..04"
-  ],
+  "requirements_delivered": [],
   "requirements_pending": [
-    "v2 candidates carried forward in milestones/v1.0-REQUIREMENTS.md § 'v2 Requirements': WEATHER-06 (multi-day/hourly forecast), WEATHER-07 (user-configurable location override), CLOCK-06 (user-configurable timezone with DST), CLOCK-07 (alarm/stopwatch), NAV-07 (long-press semantics), NAV-08 (last-view persistence across reboots).",
-    "Plus 11 UX ideas deferred from phase discussions (see milestones/v1.0-ROADMAP.md § 'Deferred UX Ideas')."
+    "v2 candidates unchanged from v1.0 archive: WEATHER-06 (multi-day/hourly forecast), WEATHER-07 (user-configurable location override), CLOCK-06 (user-configurable timezone with DST), CLOCK-07 (alarm/stopwatch), NAV-07 (long-press semantics), NAV-08 (last-view persistence across reboots).",
+    "11 deferred UX ideas in .planning/milestones/v1.0-ROADMAP.md § 'Deferred UX Ideas'."
   ],
   "blockers": [],
   "human_actions_pending": [
     {
-      "action": "Decide on next milestone: v1.1 (small enhancements) vs v2 (larger scope like multi-day forecast or long-press UX)",
-      "context": "No milestone declared. Deferred v2 candidates in v1.0-REQUIREMENTS.md § v2 Requirements + 11 UX ideas in v1.0-ROADMAP.md § Deferred UX Ideas.",
+      "action": "On-device verification of the 260719-e5g + 260719-f0b refactors — mpremote cp -r views/ main.py sh1107.py bootstrap.py icons.py text_render.py : then boot and confirm carousel + refresh cadence work identically to v1.0.",
+      "context": "Both refactors are pure structural changes (no behavior). The operator's Pico is still running commit a20bb0e (per prior handoff). Fresh flash needed before next milestone kicks off to lock in a new verified baseline.",
+      "blocking": false
+    },
+    {
+      "action": "Decide next milestone: v1.1 (small enhancements) vs v2 (larger scope such as multi-day forecast or long-press UX).",
+      "context": "No milestone declared. Deferred candidates listed in v1.0-REQUIREMENTS.md § v2 Requirements + v1.0-ROADMAP.md § Deferred UX Ideas.",
       "blocking": false
     }
   ],
   "session_lessons": [
     {
-      "lesson": "Human-verify caught two design defects that automated verify could not: (1) Plan 02.1-01 layout regression (led to revert + WEATHER-08 drop); (2) Plan 03-01 manual TZ_OFFSET brittleness (led to Plan 03-02 gap-closure redirecting CLOCK-02). Both were resolved cleanly with tools built for the case (/gsd:undo, /gsd:quick, gap-closure plan-within-phase).",
+      "lesson": "Two-step refactor when the natural first step temporarily breaks the tree: 260719-e5g's T-1 (git mv views into views/) left main.py's bare imports broken until T-2 rewrote them, and 260719-f0b's T-1 (remove weather_view.refresh) left main.py's call sites broken until T-2 added _refresh_all. Handled cleanly by landing T-1+T-2 as a single atomic commit in the second refactor, and by explicit ordering notes in the plan for the first. General pattern worth remembering: if step A leaves the tree broken without step B, either commit them together OR add a plan note that verify-block ast.parse will fail on A alone.",
       "severity": "advisory",
-      "evidence": "See .planning/quick/260718-scope-cleanup-phase-2.1/ and .planning/phases/03-clock-view/03-02-*.md."
+      "evidence": ".planning/quick/260719-e5g-*/PLAN.md and 260719-f0b-*/PLAN.md both flag this in task ordering notes."
     },
     {
-      "lesson": "ip-api's default JSON response OMITS extended fields like `offset` and `query`. Always request them explicitly via `?fields=`. Discovered mid-verify on Plan 03-02 (fix c23bb5a); caught proactively on Plan 04-01 by carrying the anti-pattern into the plan text.",
+      "lesson": "Composition-root fan-out (main.py owns cross-view dispatch, views are leaves) is the clean version of the D-31/D-38/D-41 'cache-status inline read + main.py-gated render' template. Now that views don't import each other, adding a new view to the carousel means: (a) drop views/<new>_view.py with render+setters+predicates, (b) add its import to main.py, (c) add its setter call to _refresh_all if it needs bootstrap-derived state, (d) extend the VIEWS tuple. No churn in existing views.",
       "severity": "advisory",
-      "evidence": ".planning/.continue-here.md § Critical Anti-Patterns has this as a persistent entry; commit c23bb5a is the retroactive fix."
+      "evidence": "Confirmed by the 260719-f0b refactor + the refreshed .planning/codebase/ARCHITECTURE.md."
     },
     {
-      "lesson": "Symmetric pattern reuse (weather_view's cache-status inline read → clock_view's should_sync → system_view's dual-gate render) accelerated Phase 3 and Phase 4 planning substantially. Encapsulation of upstream fetches into a single bootstrap.fetch() at the end unified this. Consider making 'cache-status inline read + main.py-gated render' the standard template for any future view.",
+      "lesson": "gsd-sdk binary is NOT installed on this host (`command -v gsd-sdk` returns nothing). The workflows fall back to the legacy `~/.claude/get-shit-done/bin/gsd-tools.cjs` invoked via node. Every quick task this session went through that legacy tool (init quick, current-timestamp). Non-blocking but worth flagging — if a future workflow hard-requires gsd-sdk (some newer commands like `gsd-sdk query commit` fall back to `gsd-tools.cjs commit`, others don't), install gsd-sdk (`npm install -g get-shit-done-cc`) or the workflow will exit at Step 2.",
       "severity": "advisory",
-      "evidence": "Phase 2.1 D-31, Phase 3 D-38, Phase 4 D-41; all locked into bootstrap.py + weather_view/clock_view/system_view at v1 close."
-    },
-    {
-      "lesson": "Phase directory rename would have been cleaner (`02.1-location-label-+-fetch-retry` no longer describes the phase's actual scope), but was explicitly deferred to avoid breaking git blame/log. Same tension with `.planning/codebase/*.md` — deferred at v1 archive. General pattern: at each phase's discuss/execute, decide up-front whether to rename retroactively or preserve history.",
-      "severity": "advisory",
-      "evidence": "The scope-cleanup quick task explicitly preserved the phase directory name; the milestone archive notes the codebase/*.md as technical debt for v2 /gsd:map-codebase."
+      "evidence": "Every quick-task init in this session used `node ~/.claude/get-shit-done/bin/gsd-tools.cjs init quick` instead of `gsd-sdk query init.quick`."
     }
   ],
   "notable_deviations": [
     {
-      "topic": "Phase 3 shipped 1 plan then grew to 2 plans mid-flight",
-      "captured_in_discuss": "CONTEXT.md assumed hardcoded TZ_OFFSET (matching CLOCK-02's original wording)",
-      "actual": "Plan 03-02 gap-closure redirected CLOCK-02 to auto-derived + persisted. Handled cleanly with 2 waves in the same phase; CONTEXT.md D-35 was updated (not rewritten) via a cross-phase quick task 260718-remove-spinner-tune-cadence.",
-      "impact": "Phase stayed on-track. CLOCK-02 wording in REQUIREMENTS.md was rewritten to reflect the delivered form."
-    },
-    {
-      "topic": "Post-verify refactor folded into v1.0 tag (option A) rather than tagged as v1.0.1",
-      "captured_in_discuss": "Packaging decision presented at end of quick task 260718-rename-bootstrap",
-      "actual": "Operator chose option A. The v1.0 tag therefore points at `a20bb0e` (includes refactor), not at `9cce78e` (Phase 4 closeout — pure verified-on-device state).",
-      "impact": "One tag instead of two. Operator re-verified the refactor on-device before archiving, so the v1.0 tag DOES point at a verified state — just not a bytewise-identical one to the original human-verify snapshot. Documented in milestones/v1.0-ROADMAP.md § Post-Verify Refactor Included."
+      "topic": "Executor for 260719-f0b did partial STATE.md update in commit 1b47637",
+      "captured_in_plan": "Plan constrained executor to NOT commit STATE.md or SUMMARY.md — orchestrator handles the final docs commit in workflow Step 8.",
+      "actual": "Executor included STATE.md in its T-3 docs commit (1b47637) along with CLAUDE.md, but the row commit-hash column was left as `—`. Orchestrator's Step 8 commit (a4ec428) filled in the hash + refreshed session continuity + added PLAN.md and SUMMARY.md.",
+      "impact": "No data loss; STATE.md ended in the correct final shape. The doubled STATE.md touch is cosmetic. Consider tightening the executor's boundary check in a future GSD update if this becomes a pattern."
     }
   ],
-  "next_action": "Run /gsd:new-milestone when ready to scope v1.1 or v2. Alternative: /gsd:map-codebase to refresh .planning/codebase/*.md and CLAUDE.md before scoping (recommended given the bootstrap.py refactor left prose docs stale).",
-  "context_notes": "Working tree clean; branch synced with origin. All 4 completed phase directories have VERIFICATION.md files with PASSED verdicts. Three quick-task directories under .planning/quick/ document post-shipping cross-phase changes. Milestone archive in .planning/milestones/v1.0-{ROADMAP,REQUIREMENTS}.md is frozen. The device on the operator's desk is running bootstrap.py + weather_view.py + clock_view.py + system_view.py at the state of commit a20bb0e (per operator's re-verify confirmation). No open bugs, no pending human actions, no in-flight code.",
+  "next_action": "Run /gsd:new-milestone to scope v1.1 or v2. Alternative: /gsd:resume-work to reload state summary and reconfirm before acting. On-device flash of the refactored tree is non-blocking but recommended before v2 scoping so any hidden regression is caught before it's built on top of.",
+  "context_notes": "Working tree clean; branch synced with origin at this session's start but NOT yet pushed after this session's commits. `git log origin/main..HEAD` shows 8 unpushed commits (7c72598 pre-dispatch plan for e5g, then the e5g and f0b task commits, then the codebase-map refresh). All commits are on main. Tag v1.0 unchanged (still points at 3eaa78c, the pre-refactor milestone archive). The device on the operator's desk is still at commit a20bb0e per the prior handoff — fresh flash needed to bring it in sync with the refactored tree. `.planning/codebase/*.md` are now accurate and current (7 docs, 1398 total lines).",
   "recent_commits_on_main": [
-    "3eaa78c chore: archive v1.0 milestone",
-    "a20bb0e docs(quick-260718-rename-bootstrap): PROJECT + CLAUDE patches; PLAN + SUMMARY; STATE update",
-    "bb2d763 refactor: rename weather.py → bootstrap.py; consolidate wifi.connect into fetch()",
-    "9cce78e docs(04): mark Phase 4 (System View) complete — v1 milestone closed",
-    "338a41b docs(04-01): plan summary + STATE update — Phase 4 code-complete",
-    "210f512 feat(04-01): system view — SSID + WAN IP + signal bars (SYSTEM-01..04)",
-    "94eb337 docs(04): phase plan — 1 plan, 1 wave (system view)",
-    "b650d96 docs(state): update Current focus + Position after Phase 4 discuss",
-    "fae8428 docs(04): capture phase context",
-    "6b47758 docs(03-01): plan summary + STATE update — Phase 3 code-complete"
+    "816ddcd docs(codebase): refresh codebase map after bootstrap + views refactors",
+    "a4ec428 docs(quick-260719-f0b): plan + summary + STATE fixups",
+    "1b47637 docs(260719-f0b): patch CLAUDE.md import bullets + component table; record decision in STATE.md",
+    "c78b12c refactor(260719-f0b): move cross-view dispatch from weather_view to main._refresh_all",
+    "f64a185 docs(quick-260719-e5g): move view modules to views/ subdirectory",
+    "dcb4470 docs(260719-e5g): update CLAUDE.md path references (T-3)",
+    "bc87b17 refactor(260719-e5g): rewrite imports to from-views form (T-2)",
+    "7875740 refactor(260719-e5g): move view modules to views/ package (T-1)",
+    "7c72598 docs(260719-e5g): pre-dispatch plan for move view modules to views subdirectory",
+    "dcf27e9 wip: pause after v1.0 archive + push — no active work"
   ],
   "tags": [
     {"name": "v1.0", "commit": "3eaa78c", "annotated": true, "pushed": true}
   ],
-  "remote_status": "synced with origin/main; 0 commits ahead, 0 behind. v1.0 tag pushed.",
+  "remote_status": "8 commits ahead of origin/main; not yet pushed. Working tree clean.",
   "uncommitted_files": []
 }
