@@ -115,8 +115,13 @@ if __name__ == "__main__":
     clock_view.sync(oled)
 
     while True:
-        # BOOTSEL short-press = hard reset (escape hatch). Polled first each tick.
+        # BOOTSEL short-press = hard reset. Wait-for-release avoids the boot-ROM mass-storage trap.
         if rp2.bootsel_button():
+            # BOOTSEL is also read by the boot ROM at reset time — if still held
+            # when reset() fires, the Pico enters USB mass-storage mode instead
+            # of rebooting into main.py. Wait for release before resetting.
+            while rp2.bootsel_button():
+                pass
             reset()
         now = time.ticks_ms()
         if _pending_dir != 0:
