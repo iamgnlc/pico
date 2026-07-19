@@ -7,7 +7,7 @@ previous_milestone_tag: v1.0
 previous_milestone_archived_at: "2026-07-18T20:15:00.000Z"
 status: milestone_archived
 stopped_at: v1.0 archived and tagged (fold-into-v1.0 packaging). Ready for /gsd:new-milestone when the operator wants to scope v1.1 or v2.
-last_updated: "2026-07-19T09:20:00.000Z"
+last_updated: "2026-07-19T11:00:00.000Z"
 last_activity: 2026-07-19
 progress:
   total_phases: 0
@@ -113,10 +113,10 @@ None yet.
 | 260718-remove-spinner-tune-cadence | Retire D-23 spinner + update D-35 NTP cadence to 6h | 2026-07-18 | `93064bd` | [260718-remove-spinner-tune-cadence](./quick/260718-remove-spinner-tune-cadence/) |
 | 260718-rename-bootstrap | Rename weather.py → bootstrap.py; absorb wifi.connect into a private helper; 6-tuple fetch() | 2026-07-18 | `bb2d763` | [260718-rename-bootstrap](./quick/260718-rename-bootstrap/) |
 | 260719-e5g | Move view modules (weather_view/clock_view/system_view) into `views/` package | 2026-07-19 | `dcb4470` | [260719-e5g-move-view-modules-to-views-subdirectory](./quick/260719-e5g-move-view-modules-to-views-subdirectory/) |
-| 260719-f0b | Decouple weather_view from sibling views; move cross-view setter dispatch to main._refresh_all | 2026-07-19 | — | [260719-f0b-decouple-weather-view-from-sibling-views](./quick/260719-f0b-decouple-weather-view-from-sibling-views/) |
+| 260719-f0b | Decouple weather_view from sibling views; move cross-view setter dispatch to main._refresh_all | 2026-07-19 | `c78b12c` | [260719-f0b-decouple-weather-view-from-sibling-views](./quick/260719-f0b-decouple-weather-view-from-sibling-views/) |
 
 ## Session Continuity
 
-Last session: 2026-07-19T09:20:00Z
-Stopped at: Completed quick task 260719-e5g — moved the three view modules into a `views/` package (git mv preserved history; imports rewritten; CLAUDE.md path references patched). Operator to `mpremote cp -r views/ ...` for on-device verification. Still between milestones — `/gsd:new-milestone` remains the natural next command.
+Last session: 2026-07-19T11:00:00Z
+Stopped at: Completed quick task 260719-f0b — decoupled `views/weather_view.py` from sibling views by replacing `refresh(oled)` with a pure `set_data(ip, temp, code, is_day)` state-setter and moving the cross-view fan-out into `main._refresh_all(oled)` (composition root). `bootstrap.py` byte-identical. Operator to `mpremote cp -r views/ main.py ...` for on-device verification. Still between milestones — `/gsd:new-milestone` remains the natural next command.
 Resume file: n/a — between milestones. `/gsd:new-milestone` is the natural next command.
