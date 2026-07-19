@@ -1,7 +1,6 @@
 from sh1107 import WIDTH, HEIGHT
 import bootstrap
-import clock_view
-import system_view
+from views import clock_view, system_view
 import icons
 import text_render
 import time

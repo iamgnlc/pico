@@ -1,8 +1,6 @@
 from sh1107 import OLED, WIDTH, HEIGHT
 from machine import Pin
-import weather_view
-import clock_view
-import system_view
+from views import weather_view, clock_view, system_view
 import text_render
 import time
 
