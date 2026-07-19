@@ -1,5 +1,6 @@
 from sh1107 import OLED, WIDTH, HEIGHT
-from machine import Pin
+from machine import Pin, reset
+import rp2
 from views import weather_view, clock_view, system_view
 import text_render
 import bootstrap
@@ -114,6 +115,9 @@ if __name__ == "__main__":
     clock_view.sync(oled)
 
     while True:
+        # BOOTSEL short-press = hard reset (escape hatch). Polled first each tick.
+        if rp2.bootsel_button():
+            reset()
         now = time.ticks_ms()
         if _pending_dir != 0:
             _current_idx = (_current_idx + _pending_dir) % 3
