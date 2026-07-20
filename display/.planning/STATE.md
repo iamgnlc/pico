@@ -6,9 +6,9 @@ previous_milestone: v1.0
 previous_milestone_tag: v1.0
 previous_milestone_archived_at: "2026-07-18T20:15:00.000Z"
 status: milestone_archived
-stopped_at: v1.0 archived and tagged (fold-into-v1.0 packaging). Ready for /gsd:new-milestone when the operator wants to scope v1.1 or v2.
-last_updated: "2026-07-19T15:55:00.000Z"
-last_activity: 2026-07-19
+stopped_at: Completed quick 260720-x55 — fall back to cached weather data on transient fetch failure (new `_cache_status = "stale"` in views/weather_view.py). Operator to re-flash and verify transient-failure fallback on device. Between milestones; `/gsd:new-milestone` still available for v1.1/v2 scoping.
+last_updated: "2026-07-20T22:56:00.000Z"
+last_activity: 2026-07-20
 progress:
   total_phases: 0
   completed_phases: 0
@@ -115,9 +115,10 @@ None yet.
 | 260719-e5g | Move view modules (weather_view/clock_view/system_view) into `views/` package | 2026-07-19 | `dcb4470` | [260719-e5g-move-view-modules-to-views-subdirectory](./quick/260719-e5g-move-view-modules-to-views-subdirectory/) |
 | 260719-f0b | Decouple weather_view from sibling views; move cross-view setter dispatch to main._refresh_all | 2026-07-19 | `c78b12c` | [260719-f0b-decouple-weather-view-from-sibling-views](./quick/260719-f0b-decouple-weather-view-from-sibling-views/) |
 | 260719-n1b | BOOTSEL short-press hard reset polled inline in the scheduler tick (calls `machine.reset()`) | 2026-07-19 | `ca9d37f` | [260719-n1b-add-bootsel-short-press-hard-reset](./quick/260719-n1b-add-bootsel-short-press-hard-reset/) |
+| 260720-x55 | Fall back to cached weather data on transient fetch failure — new `_cache_status = "stale"` in views/weather_view.py preserves last-good icon+temp instead of flipping to "no data" | 2026-07-20 | `7d4893b` | [260720-x55-fix-weather-view-stale-cache-fallback](./quick/260720-x55-fix-weather-view-stale-cache-fallback/) |
 
 ## Session Continuity
 
-Last session: 2026-07-19T15:55:00Z
-Stopped at: Completed quick task 260719-n1b — BOOTSEL short-press hard reset in `main.py`. On-device smoke test surfaced a boot-ROM mode-selection trap: BOOTSEL is dual-purpose (readable at runtime via `rp2.bootsel_button()`, ALSO checked by the boot ROM at reset time), so if the button was still held when `machine.reset()` fired the Pico diverted into USB mass-storage mode instead of rebooting into `main.py`. Follow-up fix `b678517` adds a `while rp2.bootsel_button(): pass` release-wait before `reset()` — preserves the "any press = hard reset" semantics from n1b, not a debounce, boot-ROM-mode avoidance only. Operator to re-flash `main.py` and re-test.
+Last session: 2026-07-20T22:56:00Z
+Stopped at: Completed quick 260720-x55 — introduced a fourth `_cache_status` value `"stale"` in `views/weather_view.py`. On a transient fetch failure (`bootstrap.fetch()` returns `(ip, None, ...)`), `set_data` now flips to `"stale"` iff `_cached_temp is not None` (warm cache) and to `"no_data"` otherwise (cold cache); `render` draws icon + temp for both `"ok"` and `"stale"`. `should_refresh` unchanged — `"stale"` naturally rides the 60s retry cadence. Sibling files (bootstrap.py, main.py, sh1107.py, icons.py, text_render.py, views/clock_view.py, views/system_view.py) byte-identical. Operator to re-flash `views/weather_view.py` and verify: (a) disconnect WiFi >60s while on Weather view → display keeps last-good reading, (b) cold-boot with internet unreachable → still shows "no data".
 Resume file: n/a — between milestones. `/gsd:new-milestone` is the natural next command.
