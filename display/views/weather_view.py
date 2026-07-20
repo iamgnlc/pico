@@ -33,7 +33,7 @@ def render(oled):
         _center_text(oled, "no wifi", WIDTH // 2, 32)
     elif _cache_status == "no_data":
         _center_text(oled, "no data", WIDTH // 2, 32)
-    else:
+    elif _cache_status == "ok" or _cache_status == "stale":
         icons.draw(oled, 16, 16, _cached_code, _cached_is_day)
         t = "{:.0f}".format(_cached_temp)
         _center_text(oled, t, 88, 32, scale=2)
@@ -53,8 +53,10 @@ def set_data(ip, temp, code, is_day):
     if not ip:
         _cache_status = "no_wifi"
         return
+    # Preserve last-good cache on transient fetch failure — flip to "stale"
+    # only if we have something to fall back on; "no_data" if the cache is cold.
     if temp is None:
-        _cache_status = "no_data"
+        _cache_status = "no_data" if _cached_temp is None else "stale"
         return
 
     _cached_temp = temp
