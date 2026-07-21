@@ -1,6 +1,7 @@
 from sh1107 import OLED, WIDTH, HEIGHT
 from machine import Pin, reset
 import rp2
+import network
 from views import weather_view, clock_view, system_view
 import text_render
 import bootstrap
@@ -121,6 +122,15 @@ if __name__ == "__main__":
             # when reset() fires, the Pico enters USB mass-storage mode instead
             # of rebooting into main.py. Wait for release before resetting.
             while rp2.bootsel_button():
+                pass
+            # Clean CYW43 shutdown so the post-reset boot's _wifi_connect starts
+            # from a known-good state, not a retained-associated wedge that
+            # hangs urequests forever. reset() below MUST stay unconditional.
+            try:
+                wlan = network.WLAN(network.STA_IF)
+                wlan.disconnect()
+                wlan.active(False)
+            except Exception:
                 pass
             reset()
         now = time.ticks_ms()
