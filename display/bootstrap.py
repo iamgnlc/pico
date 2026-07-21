@@ -3,15 +3,30 @@ import time
 import urequests
 
 
-def _wifi_connect(ssid, password, timeout=20):
+def _wifi_connect(ssid, password, timeout=30):
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
-    if not wlan.isconnected():
-        wlan.connect(ssid, password)
-        for _ in range(timeout):
-            if wlan.isconnected():
-                break
-            time.sleep(1)
+    # Fast path: mid-session refreshes must not pay for reconnect.
+    if wlan.isconnected():
+        return wlan.ifconfig()[0]
+    wlan.connect(ssid, password)
+    for _ in range(timeout):
+        if wlan.isconnected():
+            break
+        time.sleep(1)
+    if wlan.isconnected():
+        return wlan.ifconfig()[0]
+    # One-shot recovery: full CYW43 radio reset before a shorter retry window.
+    # Clears stuck association state that a plain wlan.connect() retry cannot.
+    wlan.disconnect()
+    wlan.active(False)
+    time.sleep(1)
+    wlan.active(True)
+    wlan.connect(ssid, password)
+    for _ in range(10):
+        if wlan.isconnected():
+            break
+        time.sleep(1)
     return wlan.ifconfig()[0] if wlan.isconnected() else None
 
 
