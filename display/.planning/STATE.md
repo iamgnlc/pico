@@ -6,9 +6,9 @@ previous_milestone: v1.0
 previous_milestone_tag: v1.0
 previous_milestone_archived_at: "2026-07-18T20:15:00.000Z"
 status: milestone_archived
-stopped_at: Completed quick 260720-x55 — fall back to cached weather data on transient fetch failure (new `_cache_status = "stale"` in views/weather_view.py). Operator to re-flash and verify transient-failure fallback on device. Between milestones; `/gsd:new-milestone` still available for v1.1/v2 scoping.
-last_updated: "2026-07-20T22:56:00.000Z"
-last_activity: 2026-07-20
+stopped_at: Completed quick 260721-c43 — bumped `_wifi_connect` timeout from 20s to 30s and added a one-shot radio-reset retry (disconnect + active(False) + settle + active(True) + connect + 10s poll) after the first window expires. Fast path (mid-session, already-connected) preserved. Operator to re-flash `bootstrap.py` and verify the four on-device scenarios in the plan's `<human-check>`. Between milestones; `/gsd:new-milestone` still available.
+last_updated: "2026-07-21T07:47:00.000Z"
+last_activity: 2026-07-21
 progress:
   total_phases: 0
   completed_phases: 0
@@ -116,9 +116,10 @@ None yet.
 | 260719-f0b | Decouple weather_view from sibling views; move cross-view setter dispatch to main._refresh_all | 2026-07-19 | `c78b12c` | [260719-f0b-decouple-weather-view-from-sibling-views](./quick/260719-f0b-decouple-weather-view-from-sibling-views/) |
 | 260719-n1b | BOOTSEL short-press hard reset polled inline in the scheduler tick (calls `machine.reset()`) | 2026-07-19 | `ca9d37f` | [260719-n1b-add-bootsel-short-press-hard-reset](./quick/260719-n1b-add-bootsel-short-press-hard-reset/) |
 | 260720-x55 | Fall back to cached weather data on transient fetch failure — new `_cache_status = "stale"` in views/weather_view.py preserves last-good icon+temp instead of flipping to "no data" | 2026-07-20 | `7d4893b` | [260720-x55-fix-weather-view-stale-cache-fallback](./quick/260720-x55-fix-weather-view-stale-cache-fallback/) |
+| 260721-c43 | `bootstrap._wifi_connect` timeout 20s→30s + one-shot CYW43 radio-reset retry (disconnect + active-cycle + 10s poll) on failure; fixes intermittent "no wifi" from tail-heavy Pico W associations and stuck STAT_CONNECT_FAIL states | 2026-07-21 | `5444717` | [260721-c43-fix-wifi-connect-timeout-and-retry](./quick/260721-c43-fix-wifi-connect-timeout-and-retry/) |
 
 ## Session Continuity
 
-Last session: 2026-07-20T22:56:00Z
-Stopped at: Completed quick 260720-x55 — introduced a fourth `_cache_status` value `"stale"` in `views/weather_view.py`. On a transient fetch failure (`bootstrap.fetch()` returns `(ip, None, ...)`), `set_data` now flips to `"stale"` iff `_cached_temp is not None` (warm cache) and to `"no_data"` otherwise (cold cache); `render` draws icon + temp for both `"ok"` and `"stale"`. `should_refresh` unchanged — `"stale"` naturally rides the 60s retry cadence. Sibling files (bootstrap.py, main.py, sh1107.py, icons.py, text_render.py, views/clock_view.py, views/system_view.py) byte-identical. Operator to re-flash `views/weather_view.py` and verify: (a) disconnect WiFi >60s while on Weather view → display keeps last-good reading, (b) cold-boot with internet unreachable → still shows "no data".
+Last session: 2026-07-21T07:47:00Z
+Stopped at: Completed quick 260721-c43 — `bootstrap._wifi_connect` reworked to (1) start with a 30s initial poll (up from 20s) to catch the Pico W CYW43 association tail, and (2) on failure of that first window, do one full radio reset (`wlan.disconnect()` + `wlan.active(False)` + `time.sleep(1)` + `wlan.active(True)` + `wlan.connect()`) followed by a shorter 10s secondary poll — clears the stuck STAT_CONNECT_FAIL state that a plain re-connect does not. Fast path (already-connected mid-session) preserved: returns immediately with no reset. Worst-case failure path is bounded at 30+1+10 = 41s. Signature and return contract unchanged (`_wifi_connect(ssid, password, timeout=30)` → str IP or None). Sibling files (fetch(), main.py, all views, sh1107.py, icons.py, text_render.py) byte-identical. Operator to re-flash `bootstrap.py` and confirm: (a) cold boot happy path speed unchanged, (b) intermittent "no wifi" no longer appears, (c) forced router disconnect → reconnect recovers within one refresh window, (d) mid-session refreshes stay fast (no reset paid).
 Resume file: n/a — between milestones. `/gsd:new-milestone` is the natural next command.
