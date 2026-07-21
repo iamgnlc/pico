@@ -14,18 +14,42 @@ _WIFI_TIMEOUT_S = 30
 _HTTP_TIMEOUT_S = 10
 
 
-def connect():
-    wlan = network.WLAN(network.STA_IF)
+class WifiTimeout(Exception):
+    pass
+
+
+def _try_connect(wlan):
     wlan.active(True)
     if wlan.isconnected():
-        return wlan
+        return
     wlan.connect(secrets.WIFI_SSID, secrets.WIFI_PASSWORD)
     deadline = time.ticks_add(time.ticks_ms(), _WIFI_TIMEOUT_S * 1000)
     while not wlan.isconnected():
         if time.ticks_diff(deadline, time.ticks_ms()) <= 0:
-            raise RuntimeError("wifi timeout")
+            raise WifiTimeout()
         time.sleep_ms(200)
-    return wlan
+
+
+def connect():
+    wlan = network.WLAN(network.STA_IF)
+    try:
+        _try_connect(wlan)
+        return wlan
+    except Exception:
+        # CYW43 can come back from a soft reset in a wedged state where
+        # wlan.active/connect raise EPERM or the wait loop times out.
+        # One active(False)/active(True) cycle unsticks it; if it still
+        # fails, surface as WifiTimeout so main's 10s retry kicks in.
+        try:
+            wlan.active(False)
+        except Exception:
+            pass
+        time.sleep_ms(500)
+    try:
+        _try_connect(wlan)
+        return wlan
+    except Exception:
+        raise WifiTimeout()
 
 
 def _get_json(url):

@@ -7,7 +7,7 @@ _data = None
 
 _CODE_LABELS = (
     ((0, 1), "Clear"),
-    ((2), "Partly Cloudy"),
+    ((2,), "Partly Cloudy"),
     ((3,), "Overcast"),
     ((45, 48), "Fog"),
     ((51, 53, 55, 56, 57), "Drizzle"),
